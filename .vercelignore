@@ -1,16 +1,20 @@
 # Ignore Python files in root directory (used for local development/scraping)
-# API files are in api/ directory
-/*.py
+# These are NOT part of the API
+/main.py
+/database.py
+/scraper.py
+/fix_missing_images.py
+
+# Ignore Python cache and virtual env
 __pycache__/
-venv/
+/venv/
 *.pyc
 
-# Keep api directory
-!api/
+# Ignore local development files
+/cookie.txt
+/user_agent.txt
+/uvicorn.log
 
-# Ignore database and data files
-*.db
+# Ignore root database (API uses api/rym.db)
+/rym.db
 *.csv
-cookie.txt
-user_agent.txt
-uvicorn.log
