@@ -182,11 +182,12 @@ def fix_images_from_chart():
                         # Create filename
                         safe_title = "".join([c for c in item['Album'] if c.isalpha() or c.isdigit() or c==' ']).strip()
                         safe_artist = "".join([c for c in item['Artist'] if c.isalpha() or c.isdigit() or c==' ']).strip()
-                        filename = f"covers/{item['Rank']}_{safe_artist}_{safe_title}.jpg".replace(" ", "_")
+                        filename_base = f"{item['Rank']}_{safe_artist}_{safe_title}.jpg".replace(" ", "_")
+                        filename = os.path.join(COVERS_DIR, filename_base)
                         
                         if download_image_with_cookies(item['Image URL'], filename):
-                            # Update database
-                            c.execute('UPDATE albums SET image_path = ? WHERE id = ?', (filename, album_id))
+                            # Update database with path relative to COVERS_DIR for consistency
+                            c.execute('UPDATE albums SET image_path = ? WHERE id = ?', (filename_base, album_id))
                             conn.commit()
                             fixed_count += 1
                             print(f"    ✓ Fixed!")
