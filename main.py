@@ -22,8 +22,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount covers directory
-app.mount("/covers", StaticFiles(directory="covers"), name="covers")
+# Mount covers directory (now in web/public/covers for Next.js static serving)
+covers_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "web", "public", "covers")
+app.mount("/covers", StaticFiles(directory=covers_path), name="covers")
 
 class Album(BaseModel):
     """Base album model with core album data."""
@@ -305,7 +306,13 @@ async def get_albums(
     genre: Optional[str] = None
 ):
     """
-    Get albums with pagination support.
+    Get albums with advanced recommendation algorithm.
+    
+    Features:
+    - Daily seed-based randomization (stable within day, refreshes daily)
+    - Multi-strategy scoring: quality (30%), personalization (40%), exploration (20%), diversity (10%)
+    - Collaborative filtering
+    - Artist and genre diversity optimization
     
     Args:
         session_token: Session cookie for personalized recommendations
@@ -329,6 +336,12 @@ async def get_albums(
         # Get user_id from session cookie
         user_id = get_user_from_session(session_token)
         
+        # Generate daily seed for consistent but refreshing recommendations
+        from datetime import date
+        today = date.today().isoformat()
+        daily_seed = hash(f"{user_id or 'anonymous'}_{today}") % (2**31)
+        rng = random.Random(daily_seed)
+        
         conn = get_db_connection()
         c = conn.cursor()
         
@@ -350,7 +363,6 @@ async def get_albums(
                 JOIN album_genres ag ON a.id = ag.album_id
                 JOIN genres g ON ag.genre_id = g.id
                 WHERE g.name = ?
-                ORDER BY a.rank ASC
             ''', (genre,)).fetchall()
         else:
             # No filter
@@ -360,7 +372,6 @@ async def get_albums(
                 SELECT a.*, ar.name as artist_name 
                 FROM albums a 
                 JOIN artists ar ON a.artist_id = ar.id
-                ORDER BY a.rank ASC
             ''').fetchall()
         
         # Get all genres
@@ -376,19 +387,56 @@ async def get_albums(
                 album_genres_map[row['album_id']] = []
             album_genres_map[row['album_id']].append(row['name'])
 
-        # Get user likes
+        # Get user profile data
         liked_album_ids = set()
+        liked_artist_ids = set()
         user_genre_counts = Counter()
+        similar_user_likes = set()
         
         if user_id:
+            # Get user's likes
             likes = c.execute("SELECT album_id FROM likes WHERE user_id = ?", (user_id,)).fetchall()
             liked_album_ids = {row['album_id'] for row in likes}
             
+            # Get liked artists
+            if liked_album_ids:
+                placeholders = ','.join('?' * len(liked_album_ids))
+                liked_artists = c.execute(f'''
+                    SELECT DISTINCT artist_id FROM albums WHERE id IN ({placeholders})
+                ''', tuple(liked_album_ids)).fetchall()
+                liked_artist_ids = {row['artist_id'] for row in liked_artists}
+            
+            # Build genre preference profile
             for aid in liked_album_ids:
                 if aid in album_genres_map:
-                    for genre in album_genres_map[aid]:
-                        user_genre_counts[genre] += 1
+                    for g in album_genres_map[aid]:
+                        user_genre_counts[g] += 1
+            
+            # Collaborative filtering: find similar users
+            if liked_album_ids:
+                # Find users who liked at least 2 of the same albums
+                placeholders = ','.join('?' * len(liked_album_ids))
+                similar_users = c.execute(f'''
+                    SELECT user_id, COUNT(*) as common_likes
+                    FROM likes
+                    WHERE album_id IN ({placeholders}) AND user_id != ?
+                    GROUP BY user_id
+                    HAVING common_likes >= 2
+                    ORDER BY common_likes DESC
+                    LIMIT 10
+                ''', (*tuple(liked_album_ids), user_id)).fetchall()
+                
+                # Get what similar users liked
+                if similar_users:
+                    similar_user_ids = [row['user_id'] for row in similar_users]
+                    placeholders = ','.join('?' * len(similar_user_ids))
+                    collab_likes = c.execute(f'''
+                        SELECT DISTINCT album_id FROM likes 
+                        WHERE user_id IN ({placeholders})
+                    ''', tuple(similar_user_ids)).fetchall()
+                    similar_user_likes = {row['album_id'] for row in collab_likes}
 
+        # Calculate scores for all albums
         results = []
         for album in albums_data:
             album_dict = dict(album)
@@ -402,34 +450,109 @@ async def get_albums(
                 img_path = img_path.replace('covers/', '')
             album_dict['image_path'] = f"/covers/{img_path}" if img_path else None
             
-            # Score
-            score = 0
-            # Base score from rank (higher rank/lower number = higher score)
-            # We use a small fraction so it acts as a tie-breaker for genre matches
-            score -= album['rank'] / 100000.0
-
+            # === SCORING ALGORITHM ===
+            
+            # 1. BASE SCORE (30%): Quality and popularity
+            base_score = 0
+            # Rank score (lower rank = better)
+            rank_score = max(0, 1 - (album['rank'] / 10000.0))
+            # Rating score
+            rating_score = (album['rating'] or 3.0) / 5.0 if album['rating'] else 0.6
+            # Popularity score (normalized ratings count)
+            try:
+                ratings_count = int(album['ratings_count'].replace(',', '')) if album['ratings_count'] else 0
+                popularity_score = min(1.0, ratings_count / 50000.0)
+            except:
+                popularity_score = 0
+            
+            base_score = (rank_score * 0.5 + rating_score * 0.3 + popularity_score * 0.2) * 30
+            
+            # 2. PERSONALIZATION SCORE (40%)
+            personalization_score = 0
             if user_id:
-                # Personalization score
-                for genre in album_dict['genres']:
-                    if genre in user_genre_counts:
-                        score += user_genre_counts[genre] * 2
+                # Genre affinity
+                genre_match = 0
+                for g in album_dict['genres']:
+                    if g in user_genre_counts:
+                        genre_match += user_genre_counts[g]
+                personalization_score += min(genre_match * 3, 20)  # Cap at 20
+                
+                # Artist affinity
+                if album['artist_id'] in liked_artist_ids:
+                    personalization_score += 10
+                
+                # Collaborative filtering boost
+                if aid in similar_user_likes and aid not in liked_album_ids:
+                    personalization_score += 8
+                
+                # Already liked albums get top priority
                 if album_dict['is_liked']:
-                    score += 5
+                    personalization_score += 15
             
-            album_dict['_score'] = score
+            # 3. EXPLORATION SCORE (20%): Controlled randomness for discovery
+            exploration_score = 0
+            if user_id:
+                # Boost albums from genres user hasn't explored much
+                unexplored_boost = 0
+                for g in album_dict['genres']:
+                    if g not in user_genre_counts or user_genre_counts[g] < 2:
+                        unexplored_boost += 1
+                exploration_score += min(unexplored_boost * 3, 10)
+                
+                # Add controlled randomness
+                exploration_score += rng.uniform(0, 10)
+            else:
+                # For anonymous users, more randomness
+                exploration_score = rng.uniform(0, 20)
+            
+            # 4. DIVERSITY PENALTY (10%): Will be applied after initial sorting
+            # (Applied later to avoid clustering)
+            
+            # Combine scores
+            total_score = base_score + personalization_score + exploration_score
+            album_dict['_score'] = total_score
+            album_dict['_artist_id'] = album['artist_id']
+            album_dict['_release_year'] = album['release_date'][:4] if album['release_date'] else None
+            
             results.append(album_dict)
-            
+        
         conn.close()
         
         # Sort by score
         results.sort(key=lambda x: x['_score'], reverse=True)
         
+        # Apply diversity optimization: penalize albums that cluster by artist/genre
+        if not genre:  # Only apply diversity when not filtering by genre
+            seen_artists = Counter()
+            seen_genres = Counter()
+            
+            for i, album in enumerate(results):
+                # Penalize if we've seen this artist too much in top results
+                artist_penalty = seen_artists[album['_artist_id']] * 2
+                
+                # Penalize if genres are over-represented
+                genre_penalty = sum(seen_genres[g] for g in album['genres']) * 0.5
+                
+                # Apply penalties
+                diversity_penalty = (artist_penalty + genre_penalty) * 0.1
+                album['_score'] -= diversity_penalty
+                
+                # Update counters
+                seen_artists[album['_artist_id']] += 1
+                for g in album['genres']:
+                    seen_genres[g] += 1
+            
+            # Re-sort after diversity adjustment
+            results.sort(key=lambda x: x['_score'], reverse=True)
+        
         # Apply pagination
         paginated_results = results[offset:offset + limit]
         
-        # Remove internal score field
+        # Clean up internal fields
         for album in paginated_results:
             album.pop('_score', None)
+            album.pop('_artist_id', None)
+            album.pop('_release_year', None)
         
         return {
             "albums": paginated_results,
