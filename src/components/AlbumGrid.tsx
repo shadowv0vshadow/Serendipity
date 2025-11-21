@@ -48,7 +48,7 @@ export default function AlbumGrid({ allAlbums, genre }: AlbumGridProps) {
 
     const loadMore = async () => {
         setIsLoading(true);
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'development' ? 'http://127.0.0.1:8000' : '');
 
         try {
             let url = `${baseUrl}/api/albums?limit=${ITEMS_PER_PAGE}&offset=${offset}`;
@@ -70,6 +70,8 @@ export default function AlbumGrid({ allAlbums, genre }: AlbumGridProps) {
             }
         } catch (e) {
             console.error("Failed to load more albums", e);
+            // Prevent infinite loop by stopping further loads on error
+            setHasMore(false);
         } finally {
             setIsLoading(false);
         }

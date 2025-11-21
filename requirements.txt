@@ -1,4 +1,5 @@
 fastapi
-uvicorn
-pydantic
+uvicorn[standard]
+mangum
 bcrypt
+curl_cffi

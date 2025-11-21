@@ -22,7 +22,7 @@ export default function AlbumDetailClient({ album }: AlbumDetailClientProps) {
             // Fetch the actual like status from API
             const fetchLikeStatus = async () => {
                 try {
-                    const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
+                    const baseUrl = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'development' ? 'http://127.0.0.1:8000' : '');
                     const res = await fetch(`${baseUrl}/api/albums/${album.id}?user_id=${user.id}`, {
                         cache: 'no-store'
                     });
@@ -50,7 +50,7 @@ export default function AlbumDetailClient({ album }: AlbumDetailClientProps) {
         setIsLiked(!previousState);
 
         try {
-            const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
+            const baseUrl = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'development' ? 'http://127.0.0.1:8000' : '');
             const res = await fetch(`${baseUrl}/api/likes`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
