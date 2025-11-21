@@ -63,17 +63,19 @@ class LikeRequest(BaseModel):
     user_id: int
     album_id: int
 
+def get_db_path() -> str:
+    # Database is located in api/rym.db
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "api", "rym.db")
+
 def get_db_connection():
     # Use absolute path to ensure we connect to the correct DB
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    db_path = os.path.join(base_dir, 'api', 'rym.db')
+    db_path = get_db_path()
     conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
     conn.row_factory = sqlite3.Row
     return conn
 
 def get_write_db_connection():
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    db_path = os.path.join(base_dir, 'api', 'rym.db')
+    db_path = get_db_path()
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     return conn
