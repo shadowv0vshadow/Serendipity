@@ -10,7 +10,10 @@ export const metadata: Metadata = {
 };
 
 async function getAlbums() {
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://127.0.0.1:8000');
+  let baseUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!baseUrl) {
+    baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://127.0.0.1:8000';
+  }
 
   // Get cookies from the request to forward to API
   const cookieStore = await cookies();
