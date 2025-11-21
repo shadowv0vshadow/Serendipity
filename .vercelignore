@@ -1,0 +1,16 @@
+# Ignore Python files in root directory (used for local development/scraping)
+# API files are in api/ directory
+/*.py
+__pycache__/
+venv/
+*.pyc
+
+# Keep api directory
+!api/
+
+# Ignore database and data files
+*.db
+*.csv
+cookie.txt
+user_agent.txt
+uvicorn.log
