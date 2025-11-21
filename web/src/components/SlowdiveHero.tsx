@@ -5,25 +5,24 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 export default function SlowdiveHero() {
     const { scrollY } = useScroll();
 
-    // Opacity: 1 at top, 0 after scrolling 300px
-    const opacity = useTransform(scrollY, [0, 300], [1, 0]);
-    // Scale: Slight zoom out effect
-    const scale = useTransform(scrollY, [0, 300], [1, 0.9]);
-    // Blur: Increase blur as it fades
-    const filter = useTransform(scrollY, [0, 300], ["blur(0px)", "blur(10px)"]);
+    // Opacity: 1 at top, 0 after scrolling 100px
+    const opacity = useTransform(scrollY, [0, 100], [1, 0]);
 
     return (
-        <div className="fixed inset-0 w-full h-[50vh] flex flex-col items-center justify-center pointer-events-none z-0">
-            <div className="absolute inset-0 bg-gradient-to-b from-purple-900/10 to-transparent" />
-
-            <motion.div style={{ opacity, scale, filter }} className="flex flex-col items-center">
-                <h1 className="text-[10rem] md:text-[15rem] font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-white/20 select-none leading-none">
-                    slowdive
+        <motion.div
+            style={{ opacity }}
+            className="fixed top-0 left-0 w-full h-12 bg-black flex items-center justify-between px-4 z-50 border-b border-white/10"
+        >
+            <div className="flex items-center gap-2">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M12 8v8" />
+                    <path d="M8 12l4 4 4-4" />
+                </svg>
+                <h1 className="text-lg font-bold tracking-widest text-white uppercase">
+                    SLOWDIVE
                 </h1>
-                <p className="text-gray-400 tracking-[1.5em] uppercase text-sm mt-4 opacity-80">
-                    Music Discovery
-                </p>
-            </motion.div>
-        </div>
+            </div>
+        </motion.div>
     );
 }

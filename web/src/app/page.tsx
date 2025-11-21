@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 
 import AlbumCard from '@/components/AlbumCard';
+import SlowdiveHero from '@/components/SlowdiveHero';
 import { Album } from '@/types';
 
 export const metadata: Metadata = {
@@ -28,7 +29,7 @@ export default async function Home() {
       <SlowdiveHero />
 
       {/* Spacer to push grid down initially */}
-      <div className="h-[40vh] w-full" />
+      <div className="h-12 w-full" />
 
       <div className="grid grid-cols-3 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 w-full z-10 relative px-4 pb-20">
         {albums.map((album: Album) => (
