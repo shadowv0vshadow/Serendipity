@@ -69,12 +69,13 @@ export default async function AlbumDetail({ params }: { params: Promise<{ id: st
                                 <span className="text-gray-500 block text-sm uppercase tracking-wider mb-2">Genres</span>
                                 <div className="flex flex-wrap gap-2">
                                     {album.genres.map((genre: string) => (
-                                        <span
+                                        <Link
                                             key={genre}
-                                            className="bg-gray-800 hover:bg-gray-700 transition-colors px-3 py-1 rounded-full text-sm text-gray-200"
+                                            href={`/genre/${encodeURIComponent(genre)}`}
+                                            className="bg-gray-800 hover:bg-purple-600 hover:text-white transition-all duration-200 px-3 py-1 rounded-full text-sm text-gray-200 cursor-pointer"
                                         >
                                             {genre}
-                                        </span>
+                                        </Link>
                                     ))}
                                 </div>
                             </div>

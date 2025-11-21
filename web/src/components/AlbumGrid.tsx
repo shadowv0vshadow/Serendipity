@@ -8,11 +8,12 @@ import { Album } from '@/types';
 
 interface AlbumGridProps {
     allAlbums: Album[];
+    genre?: string;
 }
 
 const ITEMS_PER_PAGE = 40;
 
-export default function AlbumGrid({ allAlbums }: AlbumGridProps) {
+export default function AlbumGrid({ allAlbums, genre }: AlbumGridProps) {
     const [albums, setAlbums] = useState<Album[]>(allAlbums);
     const [offset, setOffset] = useState(ITEMS_PER_PAGE);
     const [hasMore, setHasMore] = useState(true);
@@ -31,6 +32,13 @@ export default function AlbumGrid({ allAlbums }: AlbumGridProps) {
         }
     }, []);
 
+    // Reset state when genre changes
+    useEffect(() => {
+        setAlbums(allAlbums);
+        setOffset(ITEMS_PER_PAGE);
+        setHasMore(true);
+    }, [genre, allAlbums]);
+
     // Load more when scrolling
     useEffect(() => {
         if (isInView && hasMore && !isLoading) {
@@ -43,9 +51,9 @@ export default function AlbumGrid({ allAlbums }: AlbumGridProps) {
         const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
 
         try {
-            const url = userId
-                ? `${baseUrl}/api/albums?user_id=${userId}&limit=${ITEMS_PER_PAGE}&offset=${offset}`
-                : `${baseUrl}/api/albums?limit=${ITEMS_PER_PAGE}&offset=${offset}`;
+            let url = `${baseUrl}/api/albums?limit=${ITEMS_PER_PAGE}&offset=${offset}`;
+            if (userId) url += `&user_id=${userId}`;
+            if (genre) url += `&genre=${encodeURIComponent(genre)}`;
 
             const res = await fetch(url);
             if (res.ok) {

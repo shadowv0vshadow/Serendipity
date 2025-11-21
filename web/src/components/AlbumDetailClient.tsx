@@ -23,7 +23,9 @@ export default function AlbumDetailClient({ album }: AlbumDetailClientProps) {
             const fetchLikeStatus = async () => {
                 try {
                     const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
-                    const res = await fetch(`${baseUrl}/api/albums/${album.id}?user_id=${user.id}`);
+                    const res = await fetch(`${baseUrl}/api/albums/${album.id}?user_id=${user.id}`, {
+                        cache: 'no-store'
+                    });
                     if (res.ok) {
                         const data = await res.json();
                         setIsLiked(data.is_liked || false);
@@ -43,8 +45,9 @@ export default function AlbumDetailClient({ album }: AlbumDetailClientProps) {
             return;
         }
 
-        const newLikedState = !isLiked;
-        setIsLiked(newLikedState); // Optimistic update
+        // Optimistic update
+        const previousState = isLiked;
+        setIsLiked(!previousState);
 
         try {
             const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
@@ -56,12 +59,21 @@ export default function AlbumDetailClient({ album }: AlbumDetailClientProps) {
             });
 
             if (!res.ok) {
-                setIsLiked(!newLikedState); // Revert on error
                 throw new Error('Failed to toggle like');
             }
+
+            // Verify state from response
+            const data = await res.json();
+            // Always sync with server truth
+            if (data.status === 'liked') {
+                setIsLiked(true);
+            } else if (data.status === 'unliked') {
+                setIsLiked(false);
+            }
+
         } catch (error) {
             console.error('Error toggling like:', error);
-            setIsLiked(!newLikedState); // Revert on error
+            setIsLiked(previousState); // Revert on error
         }
     };
 
