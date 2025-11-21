@@ -1,7 +1,7 @@
 import sqlite3
 import os
 
-DB_NAME = 'rym.db'
+DB_NAME = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'api', 'rym.db')
 
 def get_db_connection():
     conn = sqlite3.connect(DB_NAME)

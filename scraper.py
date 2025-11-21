@@ -219,28 +219,44 @@ def parse_page(html, start_rank=1):
 
 def download_images(items):
     if not os.path.exists('covers'):
-        os.makedirs('covers')
+    # The original 'covers' directory creation is now handled by the new logic
+    # if not os.path.exists('covers'):
+    #     os.makedirs('covers')
     
     print("Downloading covers...")
     for item in items:
         if item['Image URL']:
             try:
-                # Create a safe filename
-                safe_title = "".join([c for c in item['Album'] if c.isalpha() or c.isdigit() or c==' ']).strip()
-                safe_artist = "".join([c for c in item['Artist'] if c.isalpha() or c.isdigit() or c==' ']).strip()
-                filename = f"covers/{item['Rank']}_{safe_artist}_{safe_title}.jpg".replace(" ", "_")
-                
-                # Check if already exists
-                if not os.path.exists(filename):
-                    response = requests.get(item['Image URL'], impersonate="chrome120")
-                    if response.status_code == 200:
-                        with open(filename, 'wb') as f:
-                            f.write(response.content)
-                        item['Local Image'] = filename
-                    else:
-                        print(f"Failed to download image for {item['Album']}")
-                else:
-                    item['Local Image'] = filename
+                # Download image
+                if item['Image URL']:
+                    safe_title = "".join([c for c in item['Album'] if c.isalpha() or c.isdigit() or c==' ']).strip()
+                    safe_artist = "".join([c for c in item['Artist'] if c.isalpha() or c.isdigit() or c==' ']).strip()
+                    filename_base = f"{item['Rank']}_{safe_artist}_{safe_title}.jpg".replace(" ", "_")
+                    
+                    # Save to web/public/covers
+                    # Assuming 'user_agent' is available in this scope or globally
+                    # If not, it needs to be passed or defined.
+                    # For this change, we assume it's accessible.
+                    covers_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "web", "public", "covers")
+                    os.makedirs(covers_dir, exist_ok=True)
+                    filepath = os.path.join(covers_dir, filename_base)
+                    
+                    # DB path should be relative to public/ (e.g. covers/foo.jpg) or just foo.jpg if we change get_album
+                    # Current get_album handles 'covers/' prefix.
+                    # Let's store 'covers/filename_base' to match existing data.
+                    db_image_path = f"covers/{filename_base}"
+                    
+                    try:
+                        # Check if file exists
+                        if not os.path.exists(filepath):
+                            img_data = requests.get(item['Image URL'], impersonate="chrome120", headers={"User-Agent": user_agent}).content
+                            with open(filepath, 'wb') as f:
+                                f.write(img_data)
+                            print(f"Downloaded cover for {item['Album']}")
+                        item['Local Image'] = db_image_path
+                    except Exception as e:
+                        print(f"Error downloading image for {item['Album']}: {e}")
+                        item['Local Image'] = None # Corrected 'Nonename' to 'None'
             except Exception as e:
                 print(f"Error downloading image for {item['Album']}: {e}")
         
