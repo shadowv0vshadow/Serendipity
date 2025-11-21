@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Serendipity | Music Discovery",
-  description: "Discover your next favorite album.",
+  title: "Slowdive | Music Discovery",
+  description: "Immerse yourself in music.",
 };
 
 export default function RootLayout({
