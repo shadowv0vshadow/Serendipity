@@ -1,6 +1,7 @@
+```typescript
 import { Metadata } from 'next';
 
-import AlbumCard from '@/components/AlbumCard';
+import AlbumGrid from '@/components/AlbumGrid';
 import SlowdiveHero from '@/components/SlowdiveHero';
 import { Album } from '@/types';
 
@@ -14,15 +15,15 @@ async function getAlbums() {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL
     || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://127.0.0.1:8000');
 
-  const res = await fetch(`${baseUrl}/api/albums`, { cache: 'no-store' });
-  if (!res.ok) {
-    console.error(`API Error: ${res.status} ${res.statusText} at ${baseUrl}/api/albums`);
-    // Try to read body if possible
-    const text = await res.text().catch(() => 'No body');
-    console.error(`API Response: ${text}`);
-    throw new Error(`Failed to fetch albums: ${res.status} ${res.statusText}`);
-  }
-  return res.json();
+const res = await fetch(`${baseUrl}/api/albums`, { cache: 'no-store' });
+if (!res.ok) {
+  console.error(`API Error: ${res.status} ${res.statusText} at ${baseUrl}/api/albums`);
+  // Try to read body if possible
+  const text = await res.text().catch(() => 'No body');
+  console.error(`API Response: ${text}`);
+  throw new Error(`Failed to fetch albums: ${res.status} ${res.statusText}`);
+}
+return res.json();
 }
 
 export default async function Home() {
@@ -35,11 +36,8 @@ export default async function Home() {
       {/* Spacer to push grid down initially */}
       <div className="h-12 w-full" />
 
-      <div className="grid grid-cols-3 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 w-full z-10 relative px-4 pb-20">
-        {albums.map((album: Album) => (
-          <AlbumCard key={album.id} album={album} />
-        ))}
-      </div>
+      <AlbumGrid allAlbums={albums} />
     </main>
   );
 }
+```
