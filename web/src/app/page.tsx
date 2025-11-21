@@ -9,16 +9,9 @@ export const metadata: Metadata = {
 };
 
 async function getAlbums() {
-  // In Vercel/Next.js, relative paths work if on same domain
-  // But for server components, we need absolute URL or handle it via rewrites
-  // If we use relative path in fetch on server, it fails (needs base URL)
-  // So we use an env var or default to localhost
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
-  // Actually, for Vercel deployment with rewrites, the client fetches from /api
-  // But server components fetch from where?
-  // If we deploy monorepo, api is at same domain.
-  // Let's try using the relative path if client, but server needs full URL.
-  // Simplest: Use a helper.
+  // Prioritize environment variable, then Vercel system var, then localhost
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL
+    || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://127.0.0.1:8000');
 
   const res = await fetch(`${baseUrl}/api/albums`, { cache: 'no-store' });
   if (!res.ok) {
