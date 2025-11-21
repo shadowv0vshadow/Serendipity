@@ -8,5 +8,15 @@
             "src": "web/package.json",
             "use": "@vercel/next"
         }
+    ],
+    "routes": [
+        {
+            "src": "/api/(.*)",
+            "dest": "/api/index.py"
+        },
+        {
+            "src": "/(.*)",
+            "dest": "/web/$1"
+        }
     ]
 }
