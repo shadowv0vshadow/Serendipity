@@ -35,7 +35,8 @@ class Album(BaseModel):
 def get_db_connection():
     # Use absolute path for Vercel environment
     db_path = os.path.join(os.path.dirname(__file__), 'rym.db')
-    conn = sqlite3.connect(db_path)
+    # Open in read-only mode to avoid writing lock files in Vercel's read-only FS
+    conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
     conn.row_factory = sqlite3.Row
     return conn
 
