@@ -24,15 +24,21 @@ export default async function Home() {
   const albums = await getAlbums();
 
   return (
-    <main className="min-h-screen bg-[#111] text-[#eee] relative">
-      {/* Slowdive Header Effect */}
-      <div className="fixed top-0 left-0 w-full h-40 z-50 pointer-events-none flex items-center justify-center mix-blend-difference">
-        <h1 className="text-9xl font-bold tracking-tighter text-white opacity-80 blur-sm animate-pulse">
+  return (
+    <main className="min-h-screen bg-[#111] text-[#eee]">
+      {/* Slowdive Hero Section */}
+      <div className="w-full h-[50vh] flex flex-col items-center justify-center relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-purple-900/20 to-[#111] z-0 pointer-events-none" />
+
+        <h1 className="text-[12rem] font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-transparent opacity-80 blur-sm animate-pulse z-10 select-none">
           slowdive
         </h1>
+        <p className="text-gray-400 tracking-[1em] uppercase text-sm z-10 mt-4 opacity-60">
+          Music Discovery
+        </p>
       </div>
 
-      <div className="grid grid-cols-3 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 w-full">
+      <div className="grid grid-cols-3 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 w-full z-10 relative">
         {albums.map((album: Album) => (
           <AlbumCard key={album.id} album={album} />
         ))}
