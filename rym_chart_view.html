@@ -1,0 +1,1126 @@
+
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>RYM Chart Data</title>
+            <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.css">
+            <style>
+                body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
+                .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+                h1 { color: #333; text-align: center; }
+                table { width: 100%; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>RateYourMusic Chart Data</h1>
+                <table border="1" class="dataframe display" id="rymTable">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Rank</th>
+      <th>Artist</th>
+      <th>Album</th>
+      <th>Date</th>
+      <th>Rating</th>
+      <th>Ratings Count</th>
+      <th>Genres</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>Kendrick Lamar</td>
+      <td>To Pimp a Butterfly</td>
+      <td>15 March 2015</td>
+      <td>4.38</td>
+      <td>100k</td>
+      <td>Conscious Hip Hop, Jazz Rap, Political Hip Hop, Neo-Soul, Funk, Poetry</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Radiohead</td>
+      <td>OK Computer</td>
+      <td>16 June 1997</td>
+      <td>4.30</td>
+      <td>125k</td>
+      <td>Alternative Rock, Art Rock, Post-Britpop, Space Rock Revival</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>Radiohead</td>
+      <td>In Rainbows</td>
+      <td>10 October 2007</td>
+      <td>4.33</td>
+      <td>97k</td>
+      <td>Art Rock, Alternative Rock, Electronic, Dream Pop, Art Pop</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>Pink Floyd</td>
+      <td>Wish You Were Here</td>
+      <td>12 September 1975</td>
+      <td>4.36</td>
+      <td>86k</td>
+      <td>Progressive Rock, Art Rock, Space Rock, Psychedelic Rock</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>Kendrick Lamar</td>
+      <td>good kid, m.A.A.d city</td>
+      <td>22 October 2012</td>
+      <td>4.33</td>
+      <td>83k</td>
+      <td>Conscious Hip Hop, Hardcore Hip Hop, Pop Rap, Trap</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>King Crimson</td>
+      <td>In the Court of the Crimson King</td>
+      <td>10 October 1969</td>
+      <td>4.33</td>
+      <td>80k</td>
+      <td>Progressive Rock, Art Rock, Symphonic Prog, Jazz-Rock, Free Improvisation, Psychedelic Rock</td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td>Madvillain</td>
+      <td>Madvillainy</td>
+      <td>23 March 2004</td>
+      <td>4.33</td>
+      <td>74k</td>
+      <td>Abstract Hip Hop, Jazz Rap, Experimental Hip Hop, Instrumental Hip Hop</td>
+    </tr>
+    <tr>
+      <td>8</td>
+      <td>Radiohead</td>
+      <td>Kid A</td>
+      <td>3 October 2000</td>
+      <td>4.26</td>
+      <td>102k</td>
+      <td>Art Rock, Electronic, Ambient, IDM, Post-Rock, Art Pop</td>
+    </tr>
+    <tr>
+      <td>9</td>
+      <td>Pink Floyd</td>
+      <td>The Dark Side of the Moon</td>
+      <td>23 March 1973</td>
+      <td>4.26</td>
+      <td>98k</td>
+      <td>Art Rock, Progressive Rock, Psychedelic Rock, Space Rock</td>
+    </tr>
+    <tr>
+      <td>10</td>
+      <td>My Bloody Valentine</td>
+      <td>Loveless</td>
+      <td>11 November 1991</td>
+      <td>4.25</td>
+      <td>89k</td>
+      <td>Shoegaze, Noise Pop, Dream Pop, Neo-Psychedelia</td>
+    </tr>
+    <tr>
+      <td>11</td>
+      <td>The Beatles</td>
+      <td>Abbey Road</td>
+      <td>26 September 1969</td>
+      <td>4.29</td>
+      <td>79k</td>
+      <td>Pop Rock, Psychedelic Pop, Progressive Pop, Blues Rock, Art Pop, Art Rock</td>
+    </tr>
+    <tr>
+      <td>12</td>
+      <td>Talking Heads</td>
+      <td>Remain in Light</td>
+      <td>8 October 1980</td>
+      <td>4.26</td>
+      <td>65k</td>
+      <td>New Wave, Post-Punk, Funk Rock, Funk, Afrobeat, Experimental Rock, Dance-Punk, Mutant Disco</td>
+    </tr>
+    <tr>
+      <td>13</td>
+      <td>David Bowie</td>
+      <td>The Rise and Fall of Ziggy Stardust and The Spiders From Mars</td>
+      <td>16 June 1972</td>
+      <td>4.26</td>
+      <td>68k</td>
+      <td>Glam Rock, Pop Rock, Art Rock, Rock Opera</td>
+    </tr>
+    <tr>
+      <td>14</td>
+      <td>Nas</td>
+      <td>Illmatic</td>
+      <td>19 April 1994</td>
+      <td>4.27</td>
+      <td>60k</td>
+      <td>Boom Bap, Hardcore Hip Hop, Conscious Hip Hop, Jazz Rap</td>
+    </tr>
+    <tr>
+      <td>15</td>
+      <td>Godspeed You Black Emperor!</td>
+      <td>Lift Yr. Skinny Fists Like Antennas to Heaven!</td>
+      <td>23 October 2000</td>
+      <td>4.26</td>
+      <td>60k</td>
+      <td>Post-Rock, Field Recordings, Drone, Chamber Music, Ambient</td>
+    </tr>
+    <tr>
+      <td>16</td>
+      <td>The Beatles</td>
+      <td>Revolver</td>
+      <td>5 August 1966</td>
+      <td>4.23</td>
+      <td>73k</td>
+      <td>Pop Rock, Psychedelic Pop, Psychedelic Rock, Psychedelic Pop</td>
+    </tr>
+    <tr>
+      <td>17</td>
+      <td>Mingus</td>
+      <td>The Black Saint and the Sinner Lady</td>
+      <td>July 1963</td>
+      <td>4.33</td>
+      <td>37k</td>
+      <td>Avant-Garde Jazz, Third Stream, Experimental Big Band, Flamenco Jazz, Ballet</td>
+    </tr>
+    <tr>
+      <td>18</td>
+      <td>Black Sabbath</td>
+      <td>Paranoid</td>
+      <td>18 September 1970</td>
+      <td>4.23</td>
+      <td>63k</td>
+      <td>Heavy Metal, Hard Rock, Traditional Doom Metal, Blues Rock, Heavy Psych, Occult Rock</td>
+    </tr>
+    <tr>
+      <td>19</td>
+      <td>Björk</td>
+      <td>Vespertine</td>
+      <td>27 August 2001</td>
+      <td>4.27</td>
+      <td>51k</td>
+      <td>Art Pop, Electronic, Glitch Pop, Ambient Pop, Glitch Pop, Micromontage, Folktronica, IDM</td>
+    </tr>
+    <tr>
+      <td>20</td>
+      <td>The Velvet Underground&amp;</td>
+      <td>The Velvet Underground &amp; Nico</td>
+      <td>12 March 1967</td>
+      <td>4.20</td>
+      <td>73k</td>
+      <td>Art Rock, Experimental Rock, Proto-Punk, Noise Rock, Garage Rock, Psychedelic Rock, Garage Psych</td>
+    </tr>
+    <tr>
+      <td>21</td>
+      <td>The Cure</td>
+      <td>Disintegration</td>
+      <td>2 May 1989</td>
+      <td>4.25</td>
+      <td>55k</td>
+      <td>Gothic Rock, Post-Punk, Dream Pop, Ethereal Wave</td>
+    </tr>
+    <tr>
+      <td>22</td>
+      <td>John Coltrane</td>
+      <td>A Love Supreme</td>
+      <td>January 1965</td>
+      <td>4.30</td>
+      <td>43k</td>
+      <td>Spiritual Jazz, Avant-Garde Jazz, Modal Jazz, Post-Bop</td>
+    </tr>
+    <tr>
+      <td>23</td>
+      <td>Pink Floyd</td>
+      <td>Animals</td>
+      <td>21 January 1977</td>
+      <td>4.20</td>
+      <td>62k</td>
+      <td>Progressive Rock, Art Rock, Psychedelic Rock, Hard Rock</td>
+    </tr>
+    <tr>
+      <td>24</td>
+      <td>King Crimson</td>
+      <td>Red</td>
+      <td>6 October 1974</td>
+      <td>4.26</td>
+      <td>43k</td>
+      <td>Progressive Rock, Art Rock, Jazz-Rock, Hard Rock, Free Improvisation, Heavy Metal</td>
+    </tr>
+    <tr>
+      <td>25</td>
+      <td>Miles Davis</td>
+      <td>Kind of Blue</td>
+      <td>17 August 1959</td>
+      <td>4.24</td>
+      <td>50k</td>
+      <td>Modal Jazz, Cool Jazz</td>
+    </tr>
+    <tr>
+      <td>26</td>
+      <td>The Beach Boys</td>
+      <td>Pet Sounds</td>
+      <td>16 May 1966</td>
+      <td>4.19</td>
+      <td>59k</td>
+      <td>Baroque Pop, Sunshine Pop, Psychedelic Pop, Progressive Pop, Brill Building, Art Pop</td>
+    </tr>
+    <tr>
+      <td>27</td>
+      <td>Stevie Wonder</td>
+      <td>Songs in the Key of Life</td>
+      <td>28 September 1976</td>
+      <td>4.30</td>
+      <td>31k</td>
+      <td>Soul, Progressive Soul, Funk, Smooth Soul, Pop Soul</td>
+    </tr>
+    <tr>
+      <td>28</td>
+      <td>Fishmans</td>
+      <td>LONG SEASON</td>
+      <td>25 October 1996</td>
+      <td>4.22</td>
+      <td>48k</td>
+      <td>Neo-Psychedelia, Dream Pop, Progressive Pop, Dub, Ambient Pop, Post-Rock, Post-Minimalism</td>
+    </tr>
+    <tr>
+      <td>29</td>
+      <td>Tyler, The Creator</td>
+      <td>Igor</td>
+      <td>17 May 2019</td>
+      <td>4.11</td>
+      <td>78k</td>
+      <td>Neo-Soul, Alternative R&amp;B, Synth Funk, Neo-Psychedelia, Experimental Hip Hop, Pop Rap</td>
+    </tr>
+    <tr>
+      <td>30</td>
+      <td>Kanye West</td>
+      <td>My Beautiful Dark Twisted Fantasy</td>
+      <td>22 November 2010</td>
+      <td>4.08</td>
+      <td>90k</td>
+      <td>Pop Rap, Hip Hop, Art Pop, Hardcore Hip Hop, Experimental Hip Hop</td>
+    </tr>
+    <tr>
+      <td>31</td>
+      <td>Wu-Tang Clan</td>
+      <td>Enter the Wu-Tang (36 Chambers)</td>
+      <td>9 November 1993</td>
+      <td>4.22</td>
+      <td>49k</td>
+      <td>Boom Bap, Hardcore Hip Hop</td>
+    </tr>
+    <tr>
+      <td>32</td>
+      <td>Slint</td>
+      <td>Spiderland</td>
+      <td>27 March 1991</td>
+      <td>4.16</td>
+      <td>58k</td>
+      <td>Post-Rock, Post-Hardcore, Math Rock, Spoken Word, Experimental Rock, Slowcore, Emo, Noise Rock</td>
+    </tr>
+    <tr>
+      <td>33</td>
+      <td>Portishead</td>
+      <td>Dummy</td>
+      <td>22 August 1994</td>
+      <td>4.18</td>
+      <td>56k</td>
+      <td>Trip Hop, Dark Jazz, Acid Jazz, Illbient, Turntablism</td>
+    </tr>
+    <tr>
+      <td>34</td>
+      <td>Cocteau Twins</td>
+      <td>Heaven or Las Vegas</td>
+      <td>17 September 1990</td>
+      <td>4.19</td>
+      <td>51k</td>
+      <td>Dream Pop, Ethereal Wave, Shoegaze, Baggy</td>
+    </tr>
+    <tr>
+      <td>35</td>
+      <td>Kanye West</td>
+      <td>The College Dropout</td>
+      <td>10 February 2004</td>
+      <td>4.15</td>
+      <td>71k</td>
+      <td>Chipmunk Soul, Pop Rap, Conscious Hip Hop, Neo-Soul</td>
+    </tr>
+    <tr>
+      <td>36</td>
+      <td>Neutral Milk Hotel</td>
+      <td>In the Aeroplane Over the Sea</td>
+      <td>10 February 1998</td>
+      <td>4.08</td>
+      <td>79k</td>
+      <td>Indie Folk, Indie Rock, Psychedelic Folk, Singer-Songwriter, Slacker Rock, British Brass Band, Folk Punk</td>
+    </tr>
+    <tr>
+      <td>37</td>
+      <td>Nick Drake</td>
+      <td>Pink Moon</td>
+      <td>25 February 1972</td>
+      <td>4.19</td>
+      <td>51k</td>
+      <td>Contemporary Folk, Singer-Songwriter, Folk Baroque, Loner Folk</td>
+    </tr>
+    <tr>
+      <td>38</td>
+      <td>Death Grips</td>
+      <td>The Money Store</td>
+      <td>24 April 2012</td>
+      <td>4.11</td>
+      <td>69k</td>
+      <td>Industrial Hip Hop, Hardcore Hip Hop, Experimental Hip Hop, Glitch Hop, Abstract Hip Hop</td>
+    </tr>
+    <tr>
+      <td>39</td>
+      <td>Slowdive</td>
+      <td>Souvlaki</td>
+      <td>1 June 1993</td>
+      <td>4.15</td>
+      <td>57k</td>
+      <td>Dream Pop, Shoegaze, Space Rock Revival</td>
+    </tr>
+    <tr>
+      <td>40</td>
+      <td>The Smiths</td>
+      <td>The Queen Is Dead</td>
+      <td>16 June 1986</td>
+      <td>4.13</td>
+      <td>63k</td>
+      <td>Jangle Pop, Indie Pop, Post-Punk, Neo-Acoustic</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>The Microphones</td>
+      <td>"The Glow" Pt. 2</td>
+      <td>11 September 2001</td>
+      <td>4.18</td>
+      <td>48k</td>
+      <td>Indie Folk, Psychedelic Folk, Slacker Rock, Noise Rock, Avant-Folk, Singer-Songwriter, Field Recordings</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>The Beatles</td>
+      <td>Sgt. Pepper's Lonely Hearts Club Band</td>
+      <td>26 May 1967</td>
+      <td>4.11</td>
+      <td>70k</td>
+      <td>Psychedelic Pop, Pop Rock, Psychedelic Rock, Art Rock, Baroque Pop, Sunshine Pop, Music Hall</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>Frank Ocean</td>
+      <td>Blonde</td>
+      <td>20 August 2016</td>
+      <td>4.10</td>
+      <td>65k</td>
+      <td>Alternative R&amp;B, Art Pop, Ambient Pop, Singer-Songwriter, Alt-Pop, Neo-Soul</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>Marvin Gaye</td>
+      <td>What's Going On</td>
+      <td>21 May 1971</td>
+      <td>4.20</td>
+      <td>39k</td>
+      <td>Soul, Progressive Soul, Smooth Soul, Philly Soul</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>Björk</td>
+      <td>Homogenic</td>
+      <td>22 September 1997</td>
+      <td>4.16</td>
+      <td>50k</td>
+      <td>Art Pop, Electronic, Trip Hop, IDM, Glitch Pop, Chamber Music</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>Danny Brown</td>
+      <td>Atrocity Exhibition</td>
+      <td>30 September 2016</td>
+      <td>4.14</td>
+      <td>49k</td>
+      <td>Experimental Hip Hop, Hardcore Hip Hop, Abstract Hip Hop, Industrial Hip Hop, Post-Punk</td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td>Joy Division</td>
+      <td>Unknown Pleasures</td>
+      <td>15 June 1979</td>
+      <td>4.10</td>
+      <td>64k</td>
+      <td>Post-Punk, Gothic Rock</td>
+    </tr>
+    <tr>
+      <td>8</td>
+      <td>Miles Davis</td>
+      <td>In a Silent Way</td>
+      <td>30 July 1969</td>
+      <td>4.23</td>
+      <td>30k</td>
+      <td>Jazz Fusion, Modal Jazz, Avant-Garde Jazz, Ambient, Cool Jazz</td>
+    </tr>
+    <tr>
+      <td>9</td>
+      <td>A Tribe Called Quest</td>
+      <td>The Low End Theory</td>
+      <td>24 September 1991</td>
+      <td>4.17</td>
+      <td>46k</td>
+      <td>Jazz Rap, Conscious Hip Hop, Boom Bap, Boom Bap</td>
+    </tr>
+    <tr>
+      <td>10</td>
+      <td>Daft Punk</td>
+      <td>Discovery</td>
+      <td>13 March 2001</td>
+      <td>4.13</td>
+      <td>55k</td>
+      <td>French House, Electro-Disco, Funky House, Dance-Pop, Synth Funk, Nu-Disco</td>
+    </tr>
+    <tr>
+      <td>11</td>
+      <td>Godspeed You Black Emperor!</td>
+      <td>F♯A♯∞</td>
+      <td>14 August 1997</td>
+      <td>4.17</td>
+      <td>44k</td>
+      <td>Post-Rock, Field Recordings, Spoken Word, Ambient, Drone, Chamber Music</td>
+    </tr>
+    <tr>
+      <td>12</td>
+      <td>Elliott Smith</td>
+      <td>Either / Or</td>
+      <td>25 February 1997</td>
+      <td>4.18</td>
+      <td>44k</td>
+      <td>Singer-Songwriter, Indie Folk, Indie Pop, Slacker Rock, Folk Rock, Loner Folk</td>
+    </tr>
+    <tr>
+      <td>13</td>
+      <td>The Beatles</td>
+      <td>The Beatles [White Album]</td>
+      <td>22 November 1968</td>
+      <td>4.13</td>
+      <td>58k</td>
+      <td>Pop Rock, Rock, Psychedelic Rock, Blues Rock, Art Rock, Folk Rock, Hard Rock</td>
+    </tr>
+    <tr>
+      <td>14</td>
+      <td>Fishmans</td>
+      <td>98.12.28 Otokotachi no wakare98.12.28 男達の別れ</td>
+      <td>29 September 1999</td>
+      <td>4.40</td>
+      <td>25k</td>
+      <td>Dream Pop, Neo-Psychedelia, Dub, Ambient Pop, Progressive Pop, Post-Rock, Reggae Rock</td>
+    </tr>
+    <tr>
+      <td>15</td>
+      <td>MF DOOM</td>
+      <td>MM..FOOD</td>
+      <td>16 November 2004</td>
+      <td>4.15</td>
+      <td>46k</td>
+      <td>Abstract Hip Hop, Experimental Hip Hop, Jazz Rap, Plunderphonics</td>
+    </tr>
+    <tr>
+      <td>16</td>
+      <td>Aphex Twin</td>
+      <td>Selected Ambient Works 85-92</td>
+      <td>9 November 1992</td>
+      <td>4.10</td>
+      <td>56k</td>
+      <td>Ambient Techno, IDM, Ambient, Chillout</td>
+    </tr>
+    <tr>
+      <td>17</td>
+      <td>Yes</td>
+      <td>Close to the Edge</td>
+      <td>13 September 1972</td>
+      <td>4.18</td>
+      <td>38k</td>
+      <td>Symphonic Prog, Progressive Rock</td>
+    </tr>
+    <tr>
+      <td>18</td>
+      <td>Kate Bush</td>
+      <td>Hounds of Love</td>
+      <td>16 September 1985</td>
+      <td>4.15</td>
+      <td>42k</td>
+      <td>Art Pop, Progressive Pop, Baroque Pop, Synthpop</td>
+    </tr>
+    <tr>
+      <td>19</td>
+      <td>David Bowie</td>
+      <td>★ [Blackstar]</td>
+      <td>8 January 2016</td>
+      <td>4.14</td>
+      <td>43k</td>
+      <td>Art Rock, Jazz-Rock, Experimental Rock, Electronic</td>
+    </tr>
+    <tr>
+      <td>20</td>
+      <td>Nirvana</td>
+      <td>Nevermind</td>
+      <td>24 September 1991</td>
+      <td>4.04</td>
+      <td>76k</td>
+      <td>Grunge, Alternative Rock, Punk Rock</td>
+    </tr>
+    <tr>
+      <td>21</td>
+      <td>Have a Nice Life</td>
+      <td>Deathconsciousness</td>
+      <td>24 January 2008</td>
+      <td>4.12</td>
+      <td>49k</td>
+      <td>Post-Punk, Shoegaze, Gothic Rock, Drone, Post-Rock, Post-Industrial, Doomgaze, Gothic Rock</td>
+    </tr>
+    <tr>
+      <td>22</td>
+      <td>David Bowie</td>
+      <td>Low</td>
+      <td>14 January 1977</td>
+      <td>4.13</td>
+      <td>46k</td>
+      <td>Art Rock, Ambient, Electronic, Art Pop, Krautrock, Progressive Electronic</td>
+    </tr>
+    <tr>
+      <td>23</td>
+      <td>Sufjan Stevens</td>
+      <td>Illinois</td>
+      <td>5 July 2005</td>
+      <td>4.14</td>
+      <td>43k</td>
+      <td>Chamber Pop, Singer-Songwriter, Chamber Folk, Americana, Progressive Pop, Folk Pop, Indie Folk</td>
+    </tr>
+    <tr>
+      <td>24</td>
+      <td>Miles Davis</td>
+      <td>Bitches Brew</td>
+      <td>30 March 1970</td>
+      <td>4.19</td>
+      <td>32k</td>
+      <td>Jazz Fusion, Avant-Garde Jazz, Jazz-Rock, Jazz-Funk</td>
+    </tr>
+    <tr>
+      <td>25</td>
+      <td>Bob Dylan</td>
+      <td>Highway 61 Revisited</td>
+      <td>30 August 1965</td>
+      <td>4.16</td>
+      <td>41k</td>
+      <td>Folk Rock, Singer-Songwriter, Blues Rock, Contemporary Folk</td>
+    </tr>
+    <tr>
+      <td>26</td>
+      <td>DJ Shadow</td>
+      <td>Endtroducing.....</td>
+      <td>19 November 1996</td>
+      <td>4.13</td>
+      <td>44k</td>
+      <td>Instrumental Hip Hop, Experimental Hip Hop, Plunderphonics, Trip Hop, Turntablism</td>
+    </tr>
+    <tr>
+      <td>27</td>
+      <td>Television</td>
+      <td>Marquee Moon</td>
+      <td>8 February 1977</td>
+      <td>4.14</td>
+      <td>41k</td>
+      <td>Art Punk, Art Rock, Post-Punk</td>
+    </tr>
+    <tr>
+      <td>28</td>
+      <td>Black Sabbath</td>
+      <td>Master of Reality</td>
+      <td>21 July 1971</td>
+      <td>4.14</td>
+      <td>42k</td>
+      <td>Heavy Metal, Traditional Doom Metal, Traditional Doom Metal</td>
+    </tr>
+    <tr>
+      <td>29</td>
+      <td>Swans</td>
+      <td>Soundtracks for the Blind</td>
+      <td>22 October 1996</td>
+      <td>4.16</td>
+      <td>33k</td>
+      <td>Experimental Rock, Post-Rock, Experimental, Drone, Dark Ambient, Field Recordings, Spoken Word, Sound Collage</td>
+    </tr>
+    <tr>
+      <td>30</td>
+      <td>Nirvana</td>
+      <td>In Utero</td>
+      <td>21 September 1993</td>
+      <td>4.07</td>
+      <td>60k</td>
+      <td>Grunge, Noise Rock, Post-Hardcore, Pigfuck, Noise Rock, Slacker Rock</td>
+    </tr>
+    <tr>
+      <td>31</td>
+      <td>J Dilla</td>
+      <td>Donuts</td>
+      <td>7 February 2006</td>
+      <td>4.14</td>
+      <td>37k</td>
+      <td>Instrumental Hip Hop, Experimental Hip Hop, Soul, Plunderphonics</td>
+    </tr>
+    <tr>
+      <td>32</td>
+      <td>Pixies</td>
+      <td>Doolittle</td>
+      <td>17 April 1989</td>
+      <td>4.09</td>
+      <td>53k</td>
+      <td>Indie Rock, Alternative Rock, Noise Pop, Surf Rock, Slacker Rock</td>
+    </tr>
+    <tr>
+      <td>33</td>
+      <td>Led Zeppelin</td>
+      <td>Led Zeppelin [IV]</td>
+      <td>8 November 1971</td>
+      <td>4.10</td>
+      <td>53k</td>
+      <td>Hard Rock, Blues Rock, Folk Rock</td>
+    </tr>
+    <tr>
+      <td>34</td>
+      <td>Jeff Buckley</td>
+      <td>Grace</td>
+      <td>23 August 1994</td>
+      <td>4.12</td>
+      <td>45k</td>
+      <td>Alternative Rock, Singer-Songwriter, Art Rock</td>
+    </tr>
+    <tr>
+      <td>35</td>
+      <td>The Jimi Hendrix Experience</td>
+      <td>Electric Ladyland</td>
+      <td>25 October 1968</td>
+      <td>4.16</td>
+      <td>34k</td>
+      <td>Blues Rock, Psychedelic Rock, Acid Rock, Hard Rock, Heavy Psych</td>
+    </tr>
+    <tr>
+      <td>36</td>
+      <td>Black Country, New Road</td>
+      <td>Ants From Up There</td>
+      <td>4 February 2022</td>
+      <td>4.04</td>
+      <td>55k</td>
+      <td>Art Rock, Post-Rock, Chamber Pop, Chamber Music, Indie Rock</td>
+    </tr>
+    <tr>
+      <td>37</td>
+      <td>Kanye West</td>
+      <td>Late Registration</td>
+      <td>30 August 2005</td>
+      <td>4.06</td>
+      <td>62k</td>
+      <td>Pop Rap, Hip Hop, Conscious Hip Hop, Neo-Soul, Jazz Rap, Chipmunk Soul, Pop Rap</td>
+    </tr>
+    <tr>
+      <td>38</td>
+      <td>Nine Inch Nails</td>
+      <td>The Downward Spiral</td>
+      <td>8 March 1994</td>
+      <td>4.10</td>
+      <td>43k</td>
+      <td>Industrial Rock, Industrial Metal, Electro-Industrial, Art Rock, Noise Rock</td>
+    </tr>
+    <tr>
+      <td>39</td>
+      <td>The Doors</td>
+      <td>The Doors</td>
+      <td>4 January 1967</td>
+      <td>4.08</td>
+      <td>49k</td>
+      <td>Psychedelic Rock, Blues Rock, Acid Rock, Garage Psych</td>
+    </tr>
+    <tr>
+      <td>40</td>
+      <td>Massive Attack</td>
+      <td>Mezzanine</td>
+      <td>20 April 1998</td>
+      <td>4.10</td>
+      <td>44k</td>
+      <td>Trip Hop, Dub, Post-Industrial, Illbient, Industrial Rock</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>David Bowie</td>
+      <td>Station to Station</td>
+      <td>23 January 1976</td>
+      <td>4.13</td>
+      <td>35k</td>
+      <td>Art Rock, Funk Rock, Blue-Eyed Soul, Funk Rock, Piano Rock</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Metallica</td>
+      <td>Ride the Lightning</td>
+      <td>27 July 1984</td>
+      <td>4.08</td>
+      <td>48k</td>
+      <td>Thrash Metal, Heavy Metal</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>Talk Talk</td>
+      <td>Laughing Stock</td>
+      <td>16 September 1991</td>
+      <td>4.13</td>
+      <td>31k</td>
+      <td>Post-Rock, Art Rock, Experimental Rock, Jazz-Rock, Chamber Jazz, Art Rock</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>Bob Dylan</td>
+      <td>Blood on the Tracks</td>
+      <td>20 January 1975</td>
+      <td>4.15</td>
+      <td>30k</td>
+      <td>Singer-Songwriter, Folk Rock, Contemporary Folk</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>Bob Dylan</td>
+      <td>Blonde on Blonde</td>
+      <td>20 June 1966</td>
+      <td>4.14</td>
+      <td>33k</td>
+      <td>Folk Rock, Singer-Songwriter, Blues Rock</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>Death</td>
+      <td>Symbolic</td>
+      <td>21 March 1995</td>
+      <td>4.14</td>
+      <td>28k</td>
+      <td>Technical Death Metal, Progressive Metal, Melodic Death Metal</td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td>Pharoah Sanders</td>
+      <td>Karma</td>
+      <td>May 1969</td>
+      <td>4.17</td>
+      <td>20k</td>
+      <td>Spiritual Jazz, Avant-Garde Jazz, Free Jazz, Soul Jazz, Yodeling</td>
+    </tr>
+    <tr>
+      <td>8</td>
+      <td>Sufjan Stevens</td>
+      <td>Carrie &amp; Lowell</td>
+      <td>31 March 2015</td>
+      <td>4.10</td>
+      <td>37k</td>
+      <td>Indie Folk, Singer-Songwriter, Chamber Folk, Ambient Pop</td>
+    </tr>
+    <tr>
+      <td>9</td>
+      <td>OutKast</td>
+      <td>Aquemini</td>
+      <td>29 September 1998</td>
+      <td>4.13</td>
+      <td>29k</td>
+      <td>Conscious Hip Hop, Neo-Soul, Funk, Experimental Hip Hop, Hardcore Hip Hop, Progressive Soul</td>
+    </tr>
+    <tr>
+      <td>10</td>
+      <td>Joy Division</td>
+      <td>Closer</td>
+      <td>18 July 1980</td>
+      <td>4.07</td>
+      <td>43k</td>
+      <td>Post-Punk, Gothic Rock, Gothic Rock, Coldwave</td>
+    </tr>
+    <tr>
+      <td>11</td>
+      <td>Magdalena Bay</td>
+      <td>Imaginal Disk</td>
+      <td>23 August 2024</td>
+      <td>4.08</td>
+      <td>40k</td>
+      <td>Neo-Psychedelia, Synthpop, Chillwave, Dance-Pop, Progressive Pop, Alternative Dance, Indietronica</td>
+    </tr>
+    <tr>
+      <td>12</td>
+      <td>A Tribe Called Quest</td>
+      <td>Midnight Marauders</td>
+      <td>9 November 1993</td>
+      <td>4.13</td>
+      <td>29k</td>
+      <td>Jazz Rap, Boom Bap, Conscious Hip Hop</td>
+    </tr>
+    <tr>
+      <td>13</td>
+      <td>Milton Nascimento&amp;</td>
+      <td>Clube da esquina</td>
+      <td>March 1972</td>
+      <td>4.16</td>
+      <td>20k</td>
+      <td>MPB, Psychedelic Pop, Baroque Pop, Contemporary Folk, Psychedelic Folk</td>
+    </tr>
+    <tr>
+      <td>14</td>
+      <td>The Avalanches</td>
+      <td>Since I Left You</td>
+      <td>27 November 2000</td>
+      <td>4.07</td>
+      <td>39k</td>
+      <td>Plunderphonics, Dance, Instrumental Hip Hop, Nu-Disco, Exotica, Neo-Psychedelia</td>
+    </tr>
+    <tr>
+      <td>15</td>
+      <td>Sweet Trip</td>
+      <td>Velocity : Design : Comfort</td>
+      <td>17 June 2003</td>
+      <td>4.08</td>
+      <td>36k</td>
+      <td>Glitch Pop, IDM, Dream Pop, Glitch, Shoegaze, Ambient Pop, Noise Pop</td>
+    </tr>
+    <tr>
+      <td>16</td>
+      <td>Black Sabbath</td>
+      <td>Black Sabbath</td>
+      <td>13 February 1970</td>
+      <td>4.06</td>
+      <td>42k</td>
+      <td>Heavy Metal, Hard Rock, Occult Rock, Blues Rock, Traditional Doom Metal, Heavy Psych</td>
+    </tr>
+    <tr>
+      <td>17</td>
+      <td>Metallica</td>
+      <td>Master of Puppets</td>
+      <td>3 March 1986</td>
+      <td>4.04</td>
+      <td>50k</td>
+      <td>Thrash Metal, Progressive Metal, Heavy Metal</td>
+    </tr>
+    <tr>
+      <td>18</td>
+      <td>The Jimi Hendrix Experience</td>
+      <td>Are You Experienced</td>
+      <td>12 May 1967</td>
+      <td>4.09</td>
+      <td>36k</td>
+      <td>Blues Rock, Psychedelic Rock, Acid Rock, Hard Rock</td>
+    </tr>
+    <tr>
+      <td>19</td>
+      <td>Stevie Wonder</td>
+      <td>Innervisions</td>
+      <td>3 August 1973</td>
+      <td>4.14</td>
+      <td>22k</td>
+      <td>Soul, Progressive Soul, Funk, Smooth Soul, Psychedelic Soul</td>
+    </tr>
+    <tr>
+      <td>20</td>
+      <td>Sade</td>
+      <td>Love Deluxe</td>
+      <td>11 November 1992</td>
+      <td>4.14</td>
+      <td>22k</td>
+      <td>Smooth Soul, Sophisti-Pop, Downtempo, Smooth Jazz, Neo-Soul, Contemporary R&amp;B, Downtempo, Progressive Soul</td>
+    </tr>
+    <tr>
+      <td>21</td>
+      <td>The Strokes</td>
+      <td>Is This It</td>
+      <td>27 August 2001</td>
+      <td>4.00</td>
+      <td>57k</td>
+      <td>Garage Rock Revival, Indie Rock, Post-Punk Revival</td>
+    </tr>
+    <tr>
+      <td>22</td>
+      <td>Talking Heads</td>
+      <td>Stop Making Sense</td>
+      <td>September 1984</td>
+      <td>4.33</td>
+      <td>15k</td>
+      <td>New Wave, Film Soundtrack, Post-Punk, Funk, Mutant Disco, Art Punk, Synth Funk, Dance-Punk</td>
+    </tr>
+    <tr>
+      <td>23</td>
+      <td>Leonard Cohen</td>
+      <td>Songs of Leonard Cohen</td>
+      <td>27 December 1967</td>
+      <td>4.12</td>
+      <td>28k</td>
+      <td>Contemporary Folk, Singer-Songwriter, Chamber Folk</td>
+    </tr>
+    <tr>
+      <td>24</td>
+      <td>Freddie Gibbs &amp; Madlib</td>
+      <td>Piñata</td>
+      <td>18 March 2014</td>
+      <td>4.09</td>
+      <td>33k</td>
+      <td>Gangsta Rap, Jazz Rap, Drumless, Mafioso Rap</td>
+    </tr>
+    <tr>
+      <td>25</td>
+      <td>The Cure</td>
+      <td>Pornography</td>
+      <td>3 May 1982</td>
+      <td>4.07</td>
+      <td>37k</td>
+      <td>Gothic Rock, Post-Punk, Coldwave, Neo-Psychedelia</td>
+    </tr>
+    <tr>
+      <td>26</td>
+      <td>Swans</td>
+      <td>To Be Kind</td>
+      <td>13 May 2014</td>
+      <td>4.06</td>
+      <td>35k</td>
+      <td>Experimental Rock, Post-Rock, Noise Rock, Drone, Punk, Totalism, Post-Punk</td>
+    </tr>
+    <tr>
+      <td>27</td>
+      <td>Genius/GZA</td>
+      <td>Liquid Swords</td>
+      <td>7 November 1995</td>
+      <td>4.10</td>
+      <td>28k</td>
+      <td>Hardcore Hip Hop, Boom Bap, Conscious Hip Hop</td>
+    </tr>
+    <tr>
+      <td>28</td>
+      <td>The Beatles</td>
+      <td>Rubber Soul</td>
+      <td>3 December 1965</td>
+      <td>4.01</td>
+      <td>56k</td>
+      <td>Pop Rock, Folk Rock, Psychedelic Pop, Folk Pop, British Rhythm &amp; Blues</td>
+    </tr>
+    <tr>
+      <td>29</td>
+      <td>The Velvet Underground</td>
+      <td>The Velvet Underground</td>
+      <td>March 1969</td>
+      <td>4.08</td>
+      <td>35k</td>
+      <td>Pop Rock, Folk Rock, Art Rock, Folk Pop</td>
+    </tr>
+    <tr>
+      <td>30</td>
+      <td>Frank Zappa</td>
+      <td>Hot Rats</td>
+      <td>10 October 1969</td>
+      <td>4.08</td>
+      <td>32k</td>
+      <td>Jazz-Rock, Jazz Fusion, Progressive Rock, Jam Band</td>
+    </tr>
+    <tr>
+      <td>31</td>
+      <td>Modest Mouse</td>
+      <td>The Lonesome Crowded West</td>
+      <td>18 November 1997</td>
+      <td>4.09</td>
+      <td>29k</td>
+      <td>Indie Rock, Slacker Rock, Post-Hardcore, Midwest Emo, Alt-Country</td>
+    </tr>
+    <tr>
+      <td>32</td>
+      <td>Can</td>
+      <td>Future Days</td>
+      <td>1 August 1973</td>
+      <td>4.10</td>
+      <td>26k</td>
+      <td>Krautrock, Psychedelic Rock, Ambient</td>
+    </tr>
+    <tr>
+      <td>33</td>
+      <td>Fleetwood Mac</td>
+      <td>Rumours</td>
+      <td>4 February 1977</td>
+      <td>4.04</td>
+      <td>40k</td>
+      <td>Pop Rock, Soft Rock, Folk Pop, Country Pop</td>
+    </tr>
+    <tr>
+      <td>34</td>
+      <td>Sigur Rós</td>
+      <td>Ágætis byrjun</td>
+      <td>12 June 1999</td>
+      <td>4.05</td>
+      <td>40k</td>
+      <td>Post-Rock, Dream Pop, Ambient, Chamber Pop</td>
+    </tr>
+    <tr>
+      <td>35</td>
+      <td>System of a Down</td>
+      <td>Toxicity</td>
+      <td>4 September 2001</td>
+      <td>4.03</td>
+      <td>43k</td>
+      <td>Alternative Metal, Nu Metal, Avant-Garde Metal, Crossover Thrash</td>
+    </tr>
+    <tr>
+      <td>36</td>
+      <td>Depeche Mode</td>
+      <td>Violator</td>
+      <td>19 March 1990</td>
+      <td>4.06</td>
+      <td>35k</td>
+      <td>Synthpop, Darkwave, Alternative Dance</td>
+    </tr>
+    <tr>
+      <td>37</td>
+      <td>Sonic Youth</td>
+      <td>Daydream Nation</td>
+      <td>18 October 1988</td>
+      <td>4.03</td>
+      <td>42k</td>
+      <td>Noise Rock, Alternative Rock, Post-Punk, Experimental Rock, Art Punk, Slacker Rock</td>
+    </tr>
+    <tr>
+      <td>38</td>
+      <td>John Coltrane</td>
+      <td>Giant Steps</td>
+      <td>27 January 1960</td>
+      <td>4.11</td>
+      <td>23k</td>
+      <td>Hard Bop, Modal Jazz, Post-Bop</td>
+    </tr>
+    <tr>
+      <td>39</td>
+      <td>Fiona Apple</td>
+      <td>When the Pawn</td>
+      <td>9 November 1999</td>
+      <td>4.10</td>
+      <td>26k</td>
+      <td>Singer-Songwriter, Piano Rock, Alternative Rock, Art Pop, Chamber Pop, Jazz Pop</td>
+    </tr>
+    <tr>
+      <td>40</td>
+      <td>Unwound</td>
+      <td>Leaves Turn Inside You</td>
+      <td>17 April 2001</td>
+      <td>4.10</td>
+      <td>24k</td>
+      <td>Indie Rock, Post-Hardcore, Post-Rock, Post-Rock, Art Rock, Neo-Psychedelia, Gothic Rock</td>
+    </tr>
+  </tbody>
+</table>
+            </div>
+            
+            <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.7.0.js"></script>
+            <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.js"></script>
+            <script>
+                $(document).ready( function () {
+                    $('#rymTable').DataTable({
+                        "pageLength": 50,
+                        "order": [[ 0, "asc" ]]
+                    });
+                });
+            </script>
+        </body>
+        </html>
+        

@@ -1,0 +1,1155 @@
+
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>RYM Poster Wall</title>
+            <style>
+                body { margin: 0; padding: 0; background: #111; overflow-x: hidden; }
+                .wall {
+                    display: flex;
+                    flex-wrap: wrap;
+                    width: 100%;
+                }
+                .album {
+                    position: relative;
+                    width: 10%; /* 10 items per row */
+                    padding-bottom: 10%; /* Square aspect ratio */
+                    overflow: hidden;
+                    cursor: pointer;
+                }
+                .album img {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                    transition: transform 0.3s ease, filter 0.3s ease;
+                }
+                .album:hover img {
+                    transform: scale(1.1);
+                    filter: brightness(0.7);
+                    z-index: 10;
+                }
+                .info {
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    text-align: center;
+                    color: white;
+                    opacity: 0;
+                    transition: opacity 0.3s ease;
+                    width: 90%;
+                    pointer-events: none;
+                    z-index: 20;
+                    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+                }
+                .album:hover .info {
+                    opacity: 1;
+                }
+                .rank { font-size: 1.2em; font-weight: bold; color: #f5c518; }
+                .title { font-size: 1em; font-weight: bold; margin: 5px 0; }
+                .artist { font-size: 0.9em; font-weight: normal; }
+                
+                /* Responsive */
+                @media (max-width: 1200px) { .album { width: 12.5%; padding-bottom: 12.5%; } } /* 8 per row */
+                @media (max-width: 900px) { .album { width: 16.66%; padding-bottom: 16.66%; } } /* 6 per row */
+                @media (max-width: 600px) { 
+                    .album { width: 33.33%; padding-bottom: 33.33%; } /* 3 per row */
+                    .info { font-size: 0.8em; } /* Smaller text */
+                }
+                @media (max-width: 400px) { 
+                    .album { width: 50%; padding-bottom: 50%; } /* 2 per row */
+                }
+            </style>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body>
+            <div class="wall">
+        
+                <div class="album" title="Magdalena Bay - Imaginal Disk">
+                    <img src="covers/11_Magdalena_Bay_Imaginal_Disk.jpg" loading="lazy" alt="Imaginal Disk">
+                    <div class="info">
+                        <div class="rank">#11</div>
+                        <div class="title">Imaginal Disk</div>
+                        <div class="artist">Magdalena Bay</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="The Jimi Hendrix Experience - Electric Ladyland">
+                    <img src="covers/35_The_Jimi_Hendrix_Experience_Electric_Ladyland.jpg" loading="lazy" alt="Electric Ladyland">
+                    <div class="info">
+                        <div class="rank">#35</div>
+                        <div class="title">Electric Ladyland</div>
+                        <div class="artist">The Jimi Hendrix Experience</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="The Beatles - Rubber Soul">
+                    <img src="covers/28_The_Beatles_Rubber_Soul.jpg" loading="lazy" alt="Rubber Soul">
+                    <div class="info">
+                        <div class="rank">#28</div>
+                        <div class="title">Rubber Soul</div>
+                        <div class="artist">The Beatles</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Radiohead - In Rainbows">
+                    <img src="covers/3_Radiohead_In_Rainbows.jpg" loading="lazy" alt="In Rainbows">
+                    <div class="info">
+                        <div class="rank">#3</div>
+                        <div class="title">In Rainbows</div>
+                        <div class="artist">Radiohead</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="MF DOOM - MM..FOOD">
+                    <img src="covers/15_MF_DOOM_MMFOOD.jpg" loading="lazy" alt="MM..FOOD">
+                    <div class="info">
+                        <div class="rank">#15</div>
+                        <div class="title">MM..FOOD</div>
+                        <div class="artist">MF DOOM</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Kanye West - My Beautiful Dark Twisted Fantasy">
+                    <img src="covers/30_Kanye_West_My_Beautiful_Dark_Twisted_Fantasy.jpg" loading="lazy" alt="My Beautiful Dark Twisted Fantasy">
+                    <div class="info">
+                        <div class="rank">#30</div>
+                        <div class="title">My Beautiful Dark Twisted Fantasy</div>
+                        <div class="artist">Kanye West</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="John Coltrane - Giant Steps">
+                    <img src="covers/38_John_Coltrane_Giant_Steps.jpg" loading="lazy" alt="Giant Steps">
+                    <div class="info">
+                        <div class="rank">#38</div>
+                        <div class="title">Giant Steps</div>
+                        <div class="artist">John Coltrane</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Frank Zappa - Hot Rats">
+                    <img src="covers/30_Frank_Zappa_Hot_Rats.jpg" loading="lazy" alt="Hot Rats">
+                    <div class="info">
+                        <div class="rank">#30</div>
+                        <div class="title">Hot Rats</div>
+                        <div class="artist">Frank Zappa</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Pink Floyd - Animals">
+                    <img src="covers/23_Pink_Floyd_Animals.jpg" loading="lazy" alt="Animals">
+                    <div class="info">
+                        <div class="rank">#23</div>
+                        <div class="title">Animals</div>
+                        <div class="artist">Pink Floyd</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Portishead - Dummy">
+                    <img src="covers/33_Portishead_Dummy.jpg" loading="lazy" alt="Dummy">
+                    <div class="info">
+                        <div class="rank">#33</div>
+                        <div class="title">Dummy</div>
+                        <div class="artist">Portishead</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Nirvana - Nevermind">
+                    <img src="covers/20_Nirvana_Nevermind.jpg" loading="lazy" alt="Nevermind">
+                    <div class="info">
+                        <div class="rank">#20</div>
+                        <div class="title">Nevermind</div>
+                        <div class="artist">Nirvana</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="The Doors - The Doors">
+                    <img src="covers/39_The_Doors_The_Doors.jpg" loading="lazy" alt="The Doors">
+                    <div class="info">
+                        <div class="rank">#39</div>
+                        <div class="title">The Doors</div>
+                        <div class="artist">The Doors</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Yes - Close to the Edge">
+                    <img src="covers/17_Yes_Close_to_the_Edge.jpg" loading="lazy" alt="Close to the Edge">
+                    <div class="info">
+                        <div class="rank">#17</div>
+                        <div class="title">Close to the Edge</div>
+                        <div class="artist">Yes</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="The Beach Boys - Pet Sounds">
+                    <img src="covers/26_The_Beach_Boys_Pet_Sounds.jpg" loading="lazy" alt="Pet Sounds">
+                    <div class="info">
+                        <div class="rank">#26</div>
+                        <div class="title">Pet Sounds</div>
+                        <div class="artist">The Beach Boys</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Daft Punk - Discovery">
+                    <img src="covers/10_Daft_Punk_Discovery.jpg" loading="lazy" alt="Discovery">
+                    <div class="info">
+                        <div class="rank">#10</div>
+                        <div class="title">Discovery</div>
+                        <div class="artist">Daft Punk</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Miles Davis - Bitches Brew">
+                    <img src="covers/24_Miles_Davis_Bitches_Brew.jpg" loading="lazy" alt="Bitches Brew">
+                    <div class="info">
+                        <div class="rank">#24</div>
+                        <div class="title">Bitches Brew</div>
+                        <div class="artist">Miles Davis</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Death Grips - The Money Store">
+                    <img src="covers/38_Death_Grips_The_Money_Store.jpg" loading="lazy" alt="The Money Store">
+                    <div class="info">
+                        <div class="rank">#38</div>
+                        <div class="title">The Money Store</div>
+                        <div class="artist">Death Grips</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Wu-Tang Clan - Enter the Wu-Tang (36 Chambers)">
+                    <img src="covers/31_WuTang_Clan_Enter_the_WuTang_36_Chambers.jpg" loading="lazy" alt="Enter the Wu-Tang (36 Chambers)">
+                    <div class="info">
+                        <div class="rank">#31</div>
+                        <div class="title">Enter the Wu-Tang (36 Chambers)</div>
+                        <div class="artist">Wu-Tang Clan</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Joy Division - Closer">
+                    <img src="covers/10_Joy_Division_Closer.jpg" loading="lazy" alt="Closer">
+                    <div class="info">
+                        <div class="rank">#10</div>
+                        <div class="title">Closer</div>
+                        <div class="artist">Joy Division</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Nick Drake - Pink Moon">
+                    <img src="covers/37_Nick_Drake_Pink_Moon.jpg" loading="lazy" alt="Pink Moon">
+                    <div class="info">
+                        <div class="rank">#37</div>
+                        <div class="title">Pink Moon</div>
+                        <div class="artist">Nick Drake</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Pink Floyd - Wish You Were Here">
+                    <img src="covers/4_Pink_Floyd_Wish_You_Were_Here.jpg" loading="lazy" alt="Wish You Were Here">
+                    <div class="info">
+                        <div class="rank">#4</div>
+                        <div class="title">Wish You Were Here</div>
+                        <div class="artist">Pink Floyd</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Neutral Milk Hotel - In the Aeroplane Over the Sea">
+                    <img src="covers/36_Neutral_Milk_Hotel_In_the_Aeroplane_Over_the_Sea.jpg" loading="lazy" alt="In the Aeroplane Over the Sea">
+                    <div class="info">
+                        <div class="rank">#36</div>
+                        <div class="title">In the Aeroplane Over the Sea</div>
+                        <div class="artist">Neutral Milk Hotel</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="The Jimi Hendrix Experience - Are You Experienced">
+                    <img src="covers/18_The_Jimi_Hendrix_Experience_Are_You_Experienced.jpg" loading="lazy" alt="Are You Experienced">
+                    <div class="info">
+                        <div class="rank">#18</div>
+                        <div class="title">Are You Experienced</div>
+                        <div class="artist">The Jimi Hendrix Experience</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="A Tribe Called Quest - The Low End Theory">
+                    <img src="covers/9_A_Tribe_Called_Quest_The_Low_End_Theory.jpg" loading="lazy" alt="The Low End Theory">
+                    <div class="info">
+                        <div class="rank">#9</div>
+                        <div class="title">The Low End Theory</div>
+                        <div class="artist">A Tribe Called Quest</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="King Crimson - In the Court of the Crimson King">
+                    <img src="covers/6_King_Crimson_In_the_Court_of_the_Crimson_King.jpg" loading="lazy" alt="In the Court of the Crimson King">
+                    <div class="info">
+                        <div class="rank">#6</div>
+                        <div class="title">In the Court of the Crimson King</div>
+                        <div class="artist">King Crimson</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Television - Marquee Moon">
+                    <img src="covers/27_Television_Marquee_Moon.jpg" loading="lazy" alt="Marquee Moon">
+                    <div class="info">
+                        <div class="rank">#27</div>
+                        <div class="title">Marquee Moon</div>
+                        <div class="artist">Television</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Mingus - The Black Saint and the Sinner Lady">
+                    <img src="covers/17_Mingus_The_Black_Saint_and_the_Sinner_Lady.jpg" loading="lazy" alt="The Black Saint and the Sinner Lady">
+                    <div class="info">
+                        <div class="rank">#17</div>
+                        <div class="title">The Black Saint and the Sinner Lady</div>
+                        <div class="artist">Mingus</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="The Beatles - The Beatles [White Album]">
+                    <img src="covers/13_The_Beatles_The_Beatles_White_Album.jpg" loading="lazy" alt="The Beatles [White Album]">
+                    <div class="info">
+                        <div class="rank">#13</div>
+                        <div class="title">The Beatles [White Album]</div>
+                        <div class="artist">The Beatles</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="The Cure - Pornography">
+                    <img src="covers/25_The_Cure_Pornography.jpg" loading="lazy" alt="Pornography">
+                    <div class="info">
+                        <div class="rank">#25</div>
+                        <div class="title">Pornography</div>
+                        <div class="artist">The Cure</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="David Bowie - Station to Station">
+                    <img src="covers/1_David_Bowie_Station_to_Station.jpg" loading="lazy" alt="Station to Station">
+                    <div class="info">
+                        <div class="rank">#1</div>
+                        <div class="title">Station to Station</div>
+                        <div class="artist">David Bowie</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Slowdive - Souvlaki">
+                    <img src="covers/39_Slowdive_Souvlaki.jpg" loading="lazy" alt="Souvlaki">
+                    <div class="info">
+                        <div class="rank">#39</div>
+                        <div class="title">Souvlaki</div>
+                        <div class="artist">Slowdive</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Death - Symbolic">
+                    <img src="covers/6_Death_Symbolic.jpg" loading="lazy" alt="Symbolic">
+                    <div class="info">
+                        <div class="rank">#6</div>
+                        <div class="title">Symbolic</div>
+                        <div class="artist">Death</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Pixies - Doolittle">
+                    <img src="covers/32_Pixies_Doolittle.jpg" loading="lazy" alt="Doolittle">
+                    <div class="info">
+                        <div class="rank">#32</div>
+                        <div class="title">Doolittle</div>
+                        <div class="artist">Pixies</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="The Cure - Disintegration">
+                    <img src="covers/21_The_Cure_Disintegration.jpg" loading="lazy" alt="Disintegration">
+                    <div class="info">
+                        <div class="rank">#21</div>
+                        <div class="title">Disintegration</div>
+                        <div class="artist">The Cure</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="John Coltrane - A Love Supreme">
+                    <img src="covers/22_John_Coltrane_A_Love_Supreme.jpg" loading="lazy" alt="A Love Supreme">
+                    <div class="info">
+                        <div class="rank">#22</div>
+                        <div class="title">A Love Supreme</div>
+                        <div class="artist">John Coltrane</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Bob Dylan - Blood on the Tracks">
+                    <img src="covers/4_Bob_Dylan_Blood_on_the_Tracks.jpg" loading="lazy" alt="Blood on the Tracks">
+                    <div class="info">
+                        <div class="rank">#4</div>
+                        <div class="title">Blood on the Tracks</div>
+                        <div class="artist">Bob Dylan</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Pharoah Sanders - Karma">
+                    <img src="covers/7_Pharoah_Sanders_Karma.jpg" loading="lazy" alt="Karma">
+                    <div class="info">
+                        <div class="rank">#7</div>
+                        <div class="title">Karma</div>
+                        <div class="artist">Pharoah Sanders</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Black Sabbath - Master of Reality">
+                    <img src="covers/28_Black_Sabbath_Master_of_Reality.jpg" loading="lazy" alt="Master of Reality">
+                    <div class="info">
+                        <div class="rank">#28</div>
+                        <div class="title">Master of Reality</div>
+                        <div class="artist">Black Sabbath</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Elliott Smith - Either / Or">
+                    <img src="covers/12_Elliott_Smith_Either__Or.jpg" loading="lazy" alt="Either / Or">
+                    <div class="info">
+                        <div class="rank">#12</div>
+                        <div class="title">Either / Or</div>
+                        <div class="artist">Elliott Smith</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Black Country, New Road - Ants From Up There">
+                    <img src="covers/36_Black_Country_New_Road_Ants_From_Up_There.jpg" loading="lazy" alt="Ants From Up There">
+                    <div class="info">
+                        <div class="rank">#36</div>
+                        <div class="title">Ants From Up There</div>
+                        <div class="artist">Black Country, New Road</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="The Beatles - Abbey Road">
+                    <img src="covers/11_The_Beatles_Abbey_Road.jpg" loading="lazy" alt="Abbey Road">
+                    <div class="info">
+                        <div class="rank">#11</div>
+                        <div class="title">Abbey Road</div>
+                        <div class="artist">The Beatles</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Godspeed You Black Emperor! - F♯A♯∞">
+                    <img src="covers/11_Godspeed_You_Black_Emperor_FA.jpg" loading="lazy" alt="F♯A♯∞">
+                    <div class="info">
+                        <div class="rank">#11</div>
+                        <div class="title">F♯A♯∞</div>
+                        <div class="artist">Godspeed You Black Emperor!</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="The Avalanches - Since I Left You">
+                    <img src="covers/14_The_Avalanches_Since_I_Left_You.jpg" loading="lazy" alt="Since I Left You">
+                    <div class="info">
+                        <div class="rank">#14</div>
+                        <div class="title">Since I Left You</div>
+                        <div class="artist">The Avalanches</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Metallica - Ride the Lightning">
+                    <img src="covers/2_Metallica_Ride_the_Lightning.jpg" loading="lazy" alt="Ride the Lightning">
+                    <div class="info">
+                        <div class="rank">#2</div>
+                        <div class="title">Ride the Lightning</div>
+                        <div class="artist">Metallica</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Sigur Rós - Ágætis byrjun">
+                    <img src="covers/34_Sigur_Rós_Ágætis_byrjun.jpg" loading="lazy" alt="Ágætis byrjun">
+                    <div class="info">
+                        <div class="rank">#34</div>
+                        <div class="title">Ágætis byrjun</div>
+                        <div class="artist">Sigur Rós</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Genius/GZA - Liquid Swords">
+                    <img src="covers/27_GeniusGZA_Liquid_Swords.jpg" loading="lazy" alt="Liquid Swords">
+                    <div class="info">
+                        <div class="rank">#27</div>
+                        <div class="title">Liquid Swords</div>
+                        <div class="artist">Genius/GZA</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Kendrick Lamar - good kid, m.A.A.d city">
+                    <img src="covers/5_Kendrick_Lamar_good_kid_mAAd_city.jpg" loading="lazy" alt="good kid, m.A.A.d city">
+                    <div class="info">
+                        <div class="rank">#5</div>
+                        <div class="title">good kid, m.A.A.d city</div>
+                        <div class="artist">Kendrick Lamar</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Bob Dylan - Blonde on Blonde">
+                    <img src="covers/5_Bob_Dylan_Blonde_on_Blonde.jpg" loading="lazy" alt="Blonde on Blonde">
+                    <div class="info">
+                        <div class="rank">#5</div>
+                        <div class="title">Blonde on Blonde</div>
+                        <div class="artist">Bob Dylan</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Talking Heads - Stop Making Sense">
+                    <img src="covers/22_Talking_Heads_Stop_Making_Sense.jpg" loading="lazy" alt="Stop Making Sense">
+                    <div class="info">
+                        <div class="rank">#22</div>
+                        <div class="title">Stop Making Sense</div>
+                        <div class="artist">Talking Heads</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="David Bowie - Low">
+                    <img src="covers/22_David_Bowie_Low.jpg" loading="lazy" alt="Low">
+                    <div class="info">
+                        <div class="rank">#22</div>
+                        <div class="title">Low</div>
+                        <div class="artist">David Bowie</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Frank Ocean - Blonde">
+                    <img src="covers/3_Frank_Ocean_Blonde.jpg" loading="lazy" alt="Blonde">
+                    <div class="info">
+                        <div class="rank">#3</div>
+                        <div class="title">Blonde</div>
+                        <div class="artist">Frank Ocean</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Aphex Twin - Selected Ambient Works 85-92">
+                    <img src="covers/16_Aphex_Twin_Selected_Ambient_Works_8592.jpg" loading="lazy" alt="Selected Ambient Works 85-92">
+                    <div class="info">
+                        <div class="rank">#16</div>
+                        <div class="title">Selected Ambient Works 85-92</div>
+                        <div class="artist">Aphex Twin</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Slint - Spiderland">
+                    <img src="covers/32_Slint_Spiderland.jpg" loading="lazy" alt="Spiderland">
+                    <div class="info">
+                        <div class="rank">#32</div>
+                        <div class="title">Spiderland</div>
+                        <div class="artist">Slint</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Kate Bush - Hounds of Love">
+                    <img src="covers/18_Kate_Bush_Hounds_of_Love.jpg" loading="lazy" alt="Hounds of Love">
+                    <div class="info">
+                        <div class="rank">#18</div>
+                        <div class="title">Hounds of Love</div>
+                        <div class="artist">Kate Bush</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Led Zeppelin - Led Zeppelin [IV]">
+                    <img src="covers/33_Led_Zeppelin_Led_Zeppelin_IV.jpg" loading="lazy" alt="Led Zeppelin [IV]">
+                    <div class="info">
+                        <div class="rank">#33</div>
+                        <div class="title">Led Zeppelin [IV]</div>
+                        <div class="artist">Led Zeppelin</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Madvillain - Madvillainy">
+                    <img src="covers/7_Madvillain_Madvillainy.jpg" loading="lazy" alt="Madvillainy">
+                    <div class="info">
+                        <div class="rank">#7</div>
+                        <div class="title">Madvillainy</div>
+                        <div class="artist">Madvillain</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="The Beatles - Revolver">
+                    <img src="covers/16_The_Beatles_Revolver.jpg" loading="lazy" alt="Revolver">
+                    <div class="info">
+                        <div class="rank">#16</div>
+                        <div class="title">Revolver</div>
+                        <div class="artist">The Beatles</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="A Tribe Called Quest - Midnight Marauders">
+                    <img src="covers/12_A_Tribe_Called_Quest_Midnight_Marauders.jpg" loading="lazy" alt="Midnight Marauders">
+                    <div class="info">
+                        <div class="rank">#12</div>
+                        <div class="title">Midnight Marauders</div>
+                        <div class="artist">A Tribe Called Quest</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Black Sabbath - Black Sabbath">
+                    <img src="covers/16_Black_Sabbath_Black_Sabbath.jpg" loading="lazy" alt="Black Sabbath">
+                    <div class="info">
+                        <div class="rank">#16</div>
+                        <div class="title">Black Sabbath</div>
+                        <div class="artist">Black Sabbath</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Godspeed You Black Emperor! - Lift Yr. Skinny Fists Like Antennas to Heaven!">
+                    <img src="covers/15_Godspeed_You_Black_Emperor_Lift_Yr_Skinny_Fists_Like_Antennas_to_Heaven.jpg" loading="lazy" alt="Lift Yr. Skinny Fists Like Antennas to Heaven!">
+                    <div class="info">
+                        <div class="rank">#15</div>
+                        <div class="title">Lift Yr. Skinny Fists Like Antennas to Heaven!</div>
+                        <div class="artist">Godspeed You Black Emperor!</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Miles Davis - In a Silent Way">
+                    <img src="covers/8_Miles_Davis_In_a_Silent_Way.jpg" loading="lazy" alt="In a Silent Way">
+                    <div class="info">
+                        <div class="rank">#8</div>
+                        <div class="title">In a Silent Way</div>
+                        <div class="artist">Miles Davis</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Sufjan Stevens - Illinois">
+                    <img src="covers/23_Sufjan_Stevens_Illinois.jpg" loading="lazy" alt="Illinois">
+                    <div class="info">
+                        <div class="rank">#23</div>
+                        <div class="title">Illinois</div>
+                        <div class="artist">Sufjan Stevens</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Tyler, The Creator - Igor">
+                    <img src="covers/29_Tyler_The_Creator_Igor.jpg" loading="lazy" alt="Igor">
+                    <div class="info">
+                        <div class="rank">#29</div>
+                        <div class="title">Igor</div>
+                        <div class="artist">Tyler, The Creator</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Talking Heads - Remain in Light">
+                    <img src="covers/12_Talking_Heads_Remain_in_Light.jpg" loading="lazy" alt="Remain in Light">
+                    <div class="info">
+                        <div class="rank">#12</div>
+                        <div class="title">Remain in Light</div>
+                        <div class="artist">Talking Heads</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Swans - Soundtracks for the Blind">
+                    <img src="covers/29_Swans_Soundtracks_for_the_Blind.jpg" loading="lazy" alt="Soundtracks for the Blind">
+                    <div class="info">
+                        <div class="rank">#29</div>
+                        <div class="title">Soundtracks for the Blind</div>
+                        <div class="artist">Swans</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="DJ Shadow - Endtroducing.....">
+                    <img src="covers/26_DJ_Shadow_Endtroducing.jpg" loading="lazy" alt="Endtroducing.....">
+                    <div class="info">
+                        <div class="rank">#26</div>
+                        <div class="title">Endtroducing.....</div>
+                        <div class="artist">DJ Shadow</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="The Velvet Underground& - The Velvet Underground & Nico">
+                    <img src="covers/20_The_Velvet_Underground_The_Velvet_Underground__Nico.jpg" loading="lazy" alt="The Velvet Underground & Nico">
+                    <div class="info">
+                        <div class="rank">#20</div>
+                        <div class="title">The Velvet Underground & Nico</div>
+                        <div class="artist">The Velvet Underground&</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="My Bloody Valentine - Loveless">
+                    <img src="covers/10_My_Bloody_Valentine_Loveless.jpg" loading="lazy" alt="Loveless">
+                    <div class="info">
+                        <div class="rank">#10</div>
+                        <div class="title">Loveless</div>
+                        <div class="artist">My Bloody Valentine</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Depeche Mode - Violator">
+                    <img src="covers/36_Depeche_Mode_Violator.jpg" loading="lazy" alt="Violator">
+                    <div class="info">
+                        <div class="rank">#36</div>
+                        <div class="title">Violator</div>
+                        <div class="artist">Depeche Mode</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="The Microphones - "The Glow" Pt. 2">
+                    <img src="covers/1_The_Microphones_The_Glow_Pt_2.jpg" loading="lazy" alt=""The Glow" Pt. 2">
+                    <div class="info">
+                        <div class="rank">#1</div>
+                        <div class="title">"The Glow" Pt. 2</div>
+                        <div class="artist">The Microphones</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Can - Future Days">
+                    <img src="covers/32_Can_Future_Days.jpg" loading="lazy" alt="Future Days">
+                    <div class="info">
+                        <div class="rank">#32</div>
+                        <div class="title">Future Days</div>
+                        <div class="artist">Can</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="System of a Down - Toxicity">
+                    <img src="covers/35_System_of_a_Down_Toxicity.jpg" loading="lazy" alt="Toxicity">
+                    <div class="info">
+                        <div class="rank">#35</div>
+                        <div class="title">Toxicity</div>
+                        <div class="artist">System of a Down</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Stevie Wonder - Innervisions">
+                    <img src="covers/19_Stevie_Wonder_Innervisions.jpg" loading="lazy" alt="Innervisions">
+                    <div class="info">
+                        <div class="rank">#19</div>
+                        <div class="title">Innervisions</div>
+                        <div class="artist">Stevie Wonder</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Fishmans - LONG SEASON">
+                    <img src="covers/28_Fishmans_LONG_SEASON.jpg" loading="lazy" alt="LONG SEASON">
+                    <div class="info">
+                        <div class="rank">#28</div>
+                        <div class="title">LONG SEASON</div>
+                        <div class="artist">Fishmans</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Modest Mouse - The Lonesome Crowded West">
+                    <img src="covers/31_Modest_Mouse_The_Lonesome_Crowded_West.jpg" loading="lazy" alt="The Lonesome Crowded West">
+                    <div class="info">
+                        <div class="rank">#31</div>
+                        <div class="title">The Lonesome Crowded West</div>
+                        <div class="artist">Modest Mouse</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Talk Talk - Laughing Stock">
+                    <img src="covers/3_Talk_Talk_Laughing_Stock.jpg" loading="lazy" alt="Laughing Stock">
+                    <div class="info">
+                        <div class="rank">#3</div>
+                        <div class="title">Laughing Stock</div>
+                        <div class="artist">Talk Talk</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Leonard Cohen - Songs of Leonard Cohen">
+                    <img src="covers/23_Leonard_Cohen_Songs_of_Leonard_Cohen.jpg" loading="lazy" alt="Songs of Leonard Cohen">
+                    <div class="info">
+                        <div class="rank">#23</div>
+                        <div class="title">Songs of Leonard Cohen</div>
+                        <div class="artist">Leonard Cohen</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Stevie Wonder - Songs in the Key of Life">
+                    <img src="covers/27_Stevie_Wonder_Songs_in_the_Key_of_Life.jpg" loading="lazy" alt="Songs in the Key of Life">
+                    <div class="info">
+                        <div class="rank">#27</div>
+                        <div class="title">Songs in the Key of Life</div>
+                        <div class="artist">Stevie Wonder</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Pink Floyd - The Dark Side of the Moon">
+                    <img src="covers/9_Pink_Floyd_The_Dark_Side_of_the_Moon.jpg" loading="lazy" alt="The Dark Side of the Moon">
+                    <div class="info">
+                        <div class="rank">#9</div>
+                        <div class="title">The Dark Side of the Moon</div>
+                        <div class="artist">Pink Floyd</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Joy Division - Unknown Pleasures">
+                    <img src="covers/7_Joy_Division_Unknown_Pleasures.jpg" loading="lazy" alt="Unknown Pleasures">
+                    <div class="info">
+                        <div class="rank">#7</div>
+                        <div class="title">Unknown Pleasures</div>
+                        <div class="artist">Joy Division</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="The Velvet Underground - The Velvet Underground">
+                    <img src="covers/29_The_Velvet_Underground_The_Velvet_Underground.jpg" loading="lazy" alt="The Velvet Underground">
+                    <div class="info">
+                        <div class="rank">#29</div>
+                        <div class="title">The Velvet Underground</div>
+                        <div class="artist">The Velvet Underground</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="David Bowie - ★ [Blackstar]">
+                    <img src="covers/19_David_Bowie_Blackstar.jpg" loading="lazy" alt="★ [Blackstar]">
+                    <div class="info">
+                        <div class="rank">#19</div>
+                        <div class="title">★ [Blackstar]</div>
+                        <div class="artist">David Bowie</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Radiohead - Kid A">
+                    <img src="covers/8_Radiohead_Kid_A.jpg" loading="lazy" alt="Kid A">
+                    <div class="info">
+                        <div class="rank">#8</div>
+                        <div class="title">Kid A</div>
+                        <div class="artist">Radiohead</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Bob Dylan - Highway 61 Revisited">
+                    <img src="covers/25_Bob_Dylan_Highway_61_Revisited.jpg" loading="lazy" alt="Highway 61 Revisited">
+                    <div class="info">
+                        <div class="rank">#25</div>
+                        <div class="title">Highway 61 Revisited</div>
+                        <div class="artist">Bob Dylan</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Freddie Gibbs & Madlib - Piñata">
+                    <img src="covers/24_Freddie_Gibbs__Madlib_Piñata.jpg" loading="lazy" alt="Piñata">
+                    <div class="info">
+                        <div class="rank">#24</div>
+                        <div class="title">Piñata</div>
+                        <div class="artist">Freddie Gibbs & Madlib</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Sonic Youth - Daydream Nation">
+                    <img src="covers/37_Sonic_Youth_Daydream_Nation.jpg" loading="lazy" alt="Daydream Nation">
+                    <div class="info">
+                        <div class="rank">#37</div>
+                        <div class="title">Daydream Nation</div>
+                        <div class="artist">Sonic Youth</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Radiohead - OK Computer">
+                    <img src="covers/2_Radiohead_OK_Computer.jpg" loading="lazy" alt="OK Computer">
+                    <div class="info">
+                        <div class="rank">#2</div>
+                        <div class="title">OK Computer</div>
+                        <div class="artist">Radiohead</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Marvin Gaye - What's Going On">
+                    <img src="covers/4_Marvin_Gaye_Whats_Going_On.jpg" loading="lazy" alt="What's Going On">
+                    <div class="info">
+                        <div class="rank">#4</div>
+                        <div class="title">What's Going On</div>
+                        <div class="artist">Marvin Gaye</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Black Sabbath - Paranoid">
+                    <img src="covers/18_Black_Sabbath_Paranoid.jpg" loading="lazy" alt="Paranoid">
+                    <div class="info">
+                        <div class="rank">#18</div>
+                        <div class="title">Paranoid</div>
+                        <div class="artist">Black Sabbath</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Metallica - Master of Puppets">
+                    <img src="covers/17_Metallica_Master_of_Puppets.jpg" loading="lazy" alt="Master of Puppets">
+                    <div class="info">
+                        <div class="rank">#17</div>
+                        <div class="title">Master of Puppets</div>
+                        <div class="artist">Metallica</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Nirvana - In Utero">
+                    <img src="covers/30_Nirvana_In_Utero.jpg" loading="lazy" alt="In Utero">
+                    <div class="info">
+                        <div class="rank">#30</div>
+                        <div class="title">In Utero</div>
+                        <div class="artist">Nirvana</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Swans - To Be Kind">
+                    <img src="covers/26_Swans_To_Be_Kind.jpg" loading="lazy" alt="To Be Kind">
+                    <div class="info">
+                        <div class="rank">#26</div>
+                        <div class="title">To Be Kind</div>
+                        <div class="artist">Swans</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Milton Nascimento& - Clube da esquina">
+                    <img src="covers/13_Milton_Nascimento_Clube_da_esquina.jpg" loading="lazy" alt="Clube da esquina">
+                    <div class="info">
+                        <div class="rank">#13</div>
+                        <div class="title">Clube da esquina</div>
+                        <div class="artist">Milton Nascimento&</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Björk - Vespertine">
+                    <img src="covers/19_Björk_Vespertine.jpg" loading="lazy" alt="Vespertine">
+                    <div class="info">
+                        <div class="rank">#19</div>
+                        <div class="title">Vespertine</div>
+                        <div class="artist">Björk</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Nine Inch Nails - The Downward Spiral">
+                    <img src="covers/38_Nine_Inch_Nails_The_Downward_Spiral.jpg" loading="lazy" alt="The Downward Spiral">
+                    <div class="info">
+                        <div class="rank">#38</div>
+                        <div class="title">The Downward Spiral</div>
+                        <div class="artist">Nine Inch Nails</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="King Crimson - Red">
+                    <img src="covers/24_King_Crimson_Red.jpg" loading="lazy" alt="Red">
+                    <div class="info">
+                        <div class="rank">#24</div>
+                        <div class="title">Red</div>
+                        <div class="artist">King Crimson</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Have a Nice Life - Deathconsciousness">
+                    <img src="covers/21_Have_a_Nice_Life_Deathconsciousness.jpg" loading="lazy" alt="Deathconsciousness">
+                    <div class="info">
+                        <div class="rank">#21</div>
+                        <div class="title">Deathconsciousness</div>
+                        <div class="artist">Have a Nice Life</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Massive Attack - Mezzanine">
+                    <img src="covers/40_Massive_Attack_Mezzanine.jpg" loading="lazy" alt="Mezzanine">
+                    <div class="info">
+                        <div class="rank">#40</div>
+                        <div class="title">Mezzanine</div>
+                        <div class="artist">Massive Attack</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="The Smiths - The Queen Is Dead">
+                    <img src="covers/40_The_Smiths_The_Queen_Is_Dead.jpg" loading="lazy" alt="The Queen Is Dead">
+                    <div class="info">
+                        <div class="rank">#40</div>
+                        <div class="title">The Queen Is Dead</div>
+                        <div class="artist">The Smiths</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Fleetwood Mac - Rumours">
+                    <img src="covers/33_Fleetwood_Mac_Rumours.jpg" loading="lazy" alt="Rumours">
+                    <div class="info">
+                        <div class="rank">#33</div>
+                        <div class="title">Rumours</div>
+                        <div class="artist">Fleetwood Mac</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Sade - Love Deluxe">
+                    <img src="covers/20_Sade_Love_Deluxe.jpg" loading="lazy" alt="Love Deluxe">
+                    <div class="info">
+                        <div class="rank">#20</div>
+                        <div class="title">Love Deluxe</div>
+                        <div class="artist">Sade</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Jeff Buckley - Grace">
+                    <img src="covers/34_Jeff_Buckley_Grace.jpg" loading="lazy" alt="Grace">
+                    <div class="info">
+                        <div class="rank">#34</div>
+                        <div class="title">Grace</div>
+                        <div class="artist">Jeff Buckley</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Sufjan Stevens - Carrie & Lowell">
+                    <img src="covers/8_Sufjan_Stevens_Carrie__Lowell.jpg" loading="lazy" alt="Carrie & Lowell">
+                    <div class="info">
+                        <div class="rank">#8</div>
+                        <div class="title">Carrie & Lowell</div>
+                        <div class="artist">Sufjan Stevens</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Björk - Homogenic">
+                    <img src="covers/5_Björk_Homogenic.jpg" loading="lazy" alt="Homogenic">
+                    <div class="info">
+                        <div class="rank">#5</div>
+                        <div class="title">Homogenic</div>
+                        <div class="artist">Björk</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Nas - Illmatic">
+                    <img src="covers/14_Nas_Illmatic.jpg" loading="lazy" alt="Illmatic">
+                    <div class="info">
+                        <div class="rank">#14</div>
+                        <div class="title">Illmatic</div>
+                        <div class="artist">Nas</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Kanye West - The College Dropout">
+                    <img src="covers/35_Kanye_West_The_College_Dropout.jpg" loading="lazy" alt="The College Dropout">
+                    <div class="info">
+                        <div class="rank">#35</div>
+                        <div class="title">The College Dropout</div>
+                        <div class="artist">Kanye West</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Fiona Apple - When the Pawn">
+                    <img src="covers/39_Fiona_Apple_When_the_Pawn.jpg" loading="lazy" alt="When the Pawn">
+                    <div class="info">
+                        <div class="rank">#39</div>
+                        <div class="title">When the Pawn</div>
+                        <div class="artist">Fiona Apple</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Kanye West - Late Registration">
+                    <img src="covers/37_Kanye_West_Late_Registration.jpg" loading="lazy" alt="Late Registration">
+                    <div class="info">
+                        <div class="rank">#37</div>
+                        <div class="title">Late Registration</div>
+                        <div class="artist">Kanye West</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Unwound - Leaves Turn Inside You">
+                    <img src="covers/40_Unwound_Leaves_Turn_Inside_You.jpg" loading="lazy" alt="Leaves Turn Inside You">
+                    <div class="info">
+                        <div class="rank">#40</div>
+                        <div class="title">Leaves Turn Inside You</div>
+                        <div class="artist">Unwound</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Fishmans - 98.12.28 Otokotachi no wakare98.12.28 男達の別れ">
+                    <img src="covers/14_Fishmans_981228_Otokotachi_no_wakare981228_男達の別れ.jpg" loading="lazy" alt="98.12.28 Otokotachi no wakare98.12.28 男達の別れ">
+                    <div class="info">
+                        <div class="rank">#14</div>
+                        <div class="title">98.12.28 Otokotachi no wakare98.12.28 男達の別れ</div>
+                        <div class="artist">Fishmans</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Miles Davis - Kind of Blue">
+                    <img src="covers/25_Miles_Davis_Kind_of_Blue.jpg" loading="lazy" alt="Kind of Blue">
+                    <div class="info">
+                        <div class="rank">#25</div>
+                        <div class="title">Kind of Blue</div>
+                        <div class="artist">Miles Davis</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="OutKast - Aquemini">
+                    <img src="covers/9_OutKast_Aquemini.jpg" loading="lazy" alt="Aquemini">
+                    <div class="info">
+                        <div class="rank">#9</div>
+                        <div class="title">Aquemini</div>
+                        <div class="artist">OutKast</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="The Strokes - Is This It">
+                    <img src="covers/21_The_Strokes_Is_This_It.jpg" loading="lazy" alt="Is This It">
+                    <div class="info">
+                        <div class="rank">#21</div>
+                        <div class="title">Is This It</div>
+                        <div class="artist">The Strokes</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Kendrick Lamar - To Pimp a Butterfly">
+                    <img src="covers/1_Kendrick_Lamar_To_Pimp_a_Butterfly.jpg" loading="lazy" alt="To Pimp a Butterfly">
+                    <div class="info">
+                        <div class="rank">#1</div>
+                        <div class="title">To Pimp a Butterfly</div>
+                        <div class="artist">Kendrick Lamar</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Sweet Trip - Velocity : Design : Comfort">
+                    <img src="covers/15_Sweet_Trip_Velocity__Design__Comfort.jpg" loading="lazy" alt="Velocity : Design : Comfort">
+                    <div class="info">
+                        <div class="rank">#15</div>
+                        <div class="title">Velocity : Design : Comfort</div>
+                        <div class="artist">Sweet Trip</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="J Dilla - Donuts">
+                    <img src="covers/31_J_Dilla_Donuts.jpg" loading="lazy" alt="Donuts">
+                    <div class="info">
+                        <div class="rank">#31</div>
+                        <div class="title">Donuts</div>
+                        <div class="artist">J Dilla</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="The Beatles - Sgt. Pepper's Lonely Hearts Club Band">
+                    <img src="covers/2_The_Beatles_Sgt_Peppers_Lonely_Hearts_Club_Band.jpg" loading="lazy" alt="Sgt. Pepper's Lonely Hearts Club Band">
+                    <div class="info">
+                        <div class="rank">#2</div>
+                        <div class="title">Sgt. Pepper's Lonely Hearts Club Band</div>
+                        <div class="artist">The Beatles</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Danny Brown - Atrocity Exhibition">
+                    <img src="covers/6_Danny_Brown_Atrocity_Exhibition.jpg" loading="lazy" alt="Atrocity Exhibition">
+                    <div class="info">
+                        <div class="rank">#6</div>
+                        <div class="title">Atrocity Exhibition</div>
+                        <div class="artist">Danny Brown</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="Cocteau Twins - Heaven or Las Vegas">
+                    <img src="covers/34_Cocteau_Twins_Heaven_or_Las_Vegas.jpg" loading="lazy" alt="Heaven or Las Vegas">
+                    <div class="info">
+                        <div class="rank">#34</div>
+                        <div class="title">Heaven or Las Vegas</div>
+                        <div class="artist">Cocteau Twins</div>
+                    </div>
+                </div>
+            
+                <div class="album" title="David Bowie - The Rise and Fall of Ziggy Stardust and The Spiders From Mars">
+                    <img src="covers/13_David_Bowie_The_Rise_and_Fall_of_Ziggy_Stardust_and_The_Spiders_From_Mars.jpg" loading="lazy" alt="The Rise and Fall of Ziggy Stardust and The Spiders From Mars">
+                    <div class="info">
+                        <div class="rank">#13</div>
+                        <div class="title">The Rise and Fall of Ziggy Stardust and The Spiders From Mars</div>
+                        <div class="artist">David Bowie</div>
+                    </div>
+                </div>
+            
+            </div>
+        </body>
+        </html>
+        

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>{{ album['title'] }} - {{ album['artist_name'] }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            background: #111;
+            color: #eee;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .back-link {
+            color: #aaa;
+            text-decoration: none;
+            font-size: 1.1em;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .back-link:hover {
+            color: white;
+        }
+
+        .header {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+            margin-bottom: 30px;
+        }
+
+        .cover {
+            width: 300px;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        .meta {
+            flex: 1;
+        }
+
+        h1 {
+            margin: 0 0 10px 0;
+            font-size: 2.5em;
+            line-height: 1.1;
+        }
+
+        h2 {
+            margin: 0 0 20px 0;
+            color: #aaa;
+            font-weight: normal;
+            font-size: 1.5em;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+
+        .stat-item {
+            background: #222;
+            padding: 8px 15px;
+            border-radius: 20px;
+        }
+
+        .rating {
+            color: #f5c518;
+            font-weight: bold;
+        }
+
+        .genres {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .genre {
+            background: #333;
+            color: #ddd;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.9em;
+        }
+
+        .streaming {
+            margin-top: 30px;
+        }
+
+        .streaming h3 {
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .player {
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .header {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+
+            .cover {
+                width: 250px;
+                height: 250px;
+            }
+
+            .stats {
+                justify-content: center;
+            }
+
+            .genres {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <a href="/" class="back-link">{{ t.back }}</a>
+
+        <div class="header">
+            <img src="/{{ album['image_path'] }}" class="cover" alt="{{ album['title'] }}">
+            <div class="meta">
+                <h1>{{ album['title'] }}</h1>
+                <h2>{{ album['artist_name'] }}</h2>
+
+                <div class="stats">
+                    <div class="stat-item">{{ t.rank }}{{ album['rank'] }}</div>
+                    <div class="stat-item rating">★ {{ album['rating'] }}</div>
+                    <div class="stat-item">{{ album['release_date'] }}</div>
+                </div>
+
+                <div class="genres">
+                    {% for genre in genres %}
+                    <span class="genre">{{ genre['name'] }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="streaming">
+            <h3>{{ t.listen }}</h3>
+
+            {% if album['spotify_link'] %}
+            <div class="player">
+                <!-- Spotify Embed -->
+                {% set spotify_id = album['spotify_link'].split('/')[-1] %}
+                <iframe style="border-radius:12px"
+                    src="https://open.spotify.com/embed/album/{{ spotify_id }}?utm_source=generator" width="100%"
+                    height="152" frameBorder="0" allowfullscreen=""
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    loading="lazy"></iframe>
+            </div>
+            {% endif %}
+
+            {% if album['youtube_link'] %}
+            <div class="player">
+                <!-- YouTube Embed -->
+                {% set youtube_id = album['youtube_link'].split('v=')[-1] %}
+                <iframe width="100%" height="315" src="https://www.youtube.com/embed/{{ youtube_id }}"
+                    title="YouTube video player" frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowfullscreen></iframe>
+            </div>
+            {% endif %}
+
+            {% if not album['spotify_link'] and not album['youtube_link'] %}
+            <p style="color: #666; text-align: center;">{{ t.no_links }}</p>
+            {% endif %}
+        </div>
+    </div>
+</body>
+
+</html>

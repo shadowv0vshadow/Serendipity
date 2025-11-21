@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+.env
+
+# Node.js
+node_modules/
+.next/
+npm-debug.log
+
+# System
+.DS_Store
+.vscode/
+.idea/
+
+# Project specific
+# We keep rym.db and covers/ for this specific deployment strategy
+# If rym.db becomes too large, consider using Git LFS
