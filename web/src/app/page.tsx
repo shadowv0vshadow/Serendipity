@@ -16,7 +16,11 @@ async function getAlbums() {
 
   const res = await fetch(`${baseUrl}/api/albums`, { cache: 'no-store' });
   if (!res.ok) {
-    throw new Error('Failed to fetch albums');
+    console.error(`API Error: ${res.status} ${res.statusText} at ${baseUrl}/api/albums`);
+    // Try to read body if possible
+    const text = await res.text().catch(() => 'No body');
+    console.error(`API Response: ${text}`);
+    throw new Error(`Failed to fetch albums: ${res.status} ${res.statusText}`);
   }
   return res.json();
 }
