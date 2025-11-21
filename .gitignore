@@ -1,22 +1,42 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
 # Python
+venv/
 __pycache__/
 *.pyc
-venv/
-.env
 
-# Node.js
+# Next.js
 node_modules/
 .next/
-npm-debug.log
+.env.local
 
-# System
-.DS_Store
-.vscode/
-.idea/
+# Database and data
+*.db
+*.csv
 
 # Sensitive files
 cookie.txt
 
-# Project specific
 # Keep rym.db (database) and covers/ (album images) for deployment.
-# If they become large, consider using Git LFS for rym.db and covers/.
+# If they become large, consider using Git LFS for api/rym.db and public/covers/.if needed)
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# 添加到 .gitignore
+.env.local
