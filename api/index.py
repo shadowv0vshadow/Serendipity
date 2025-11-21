@@ -58,7 +58,9 @@ class LikeRequest(BaseModel):
     album_id: int
 
 def get_db_connection():
-    db_path = os.path.join(os.path.dirname(__file__), 'rym.db')
+    # rym.db is in the project root, one level up from api/
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    db_path = os.path.join(base_dir, '..', 'rym.db')
     conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
     conn.row_factory = sqlite3.Row
     return conn
@@ -67,7 +69,8 @@ def get_write_db_connection():
     # For write operations (Auth/Likes), we need a writable connection
     # Note: This might still fail on Vercel if not using external DB, 
     # but works for local dev. For Vercel, you'd typically use Postgres/MySQL.
-    db_path = os.path.join(os.path.dirname(__file__), 'rym.db')
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    db_path = os.path.join(base_dir, '..', 'rym.db')
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     return conn
