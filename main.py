@@ -22,13 +22,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount covers directory (now in web/public/covers for Next.js static serving)
-# Mount covers directory (now in web/public/covers for Next.js static serving)
-# In Vercel, we don't need to serve static files via FastAPI as Next.js handles them.
-# Also, the directory structure in Vercel Lambda is different.
-covers_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "public", "covers")
-if os.path.exists(covers_path):
-    app.mount("/covers", StaticFiles(directory=covers_path), name="covers")
+# Static files are handled by Next.js in public/ directory.
+# No need to mount in FastAPI.
 
 class Album(BaseModel):
     """Base album model with core album data."""
