@@ -51,11 +51,53 @@ def init_db():
         CREATE TABLE IF NOT EXISTS album_genres (
             album_id INTEGER,
             genre_id INTEGER,
+            is_primary BOOLEAN DEFAULT 0,
             PRIMARY KEY (album_id, genre_id),
             FOREIGN KEY (album_id) REFERENCES albums (id),
             FOREIGN KEY (genre_id) REFERENCES genres (id)
         )
     ''')
+    
+    # Migration: Check if is_primary exists, if not add it
+    try:
+        c.execute("SELECT is_primary FROM album_genres LIMIT 1")
+    except sqlite3.OperationalError:
+        print("Migrating: Adding is_primary to album_genres")
+        c.execute("ALTER TABLE album_genres ADD COLUMN is_primary BOOLEAN DEFAULT 0")
+
+    # Users Table
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+
+    # Likes Table
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS likes (
+            user_id INTEGER,
+            album_id INTEGER,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (user_id, album_id),
+            FOREIGN KEY (user_id) REFERENCES users (id),
+            FOREIGN KEY (album_id) REFERENCES albums (id)
+        )
+    ''')
+
+    # Sessions Table for cookie-based auth
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS sessions (
+            token TEXT PRIMARY KEY,
+            user_id INTEGER NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            expires_at TIMESTAMP NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES users (id)
+        )
+    ''')
+
     
     conn.commit()
     conn.close()

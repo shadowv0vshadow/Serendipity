@@ -14,6 +14,9 @@ npm-debug.log
 .vscode/
 .idea/
 
+# Sensitive files
+cookie.txt
+
 # Project specific
-# We keep rym.db and covers/ for this specific deployment strategy
-# If rym.db becomes too large, consider using Git LFS
+# Keep rym.db (database) and covers/ (album images) for deployment.
+# If they become large, consider using Git LFS for rym.db and covers/.
