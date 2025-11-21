@@ -196,25 +196,44 @@ async def logout(response: Response, session_token: Optional[str] = Cookie(None)
     return {"message": "Logged out successfully"}
 
 @app.post("/api/likes")
-async def toggle_like(like: LikeRequest):
+async def toggle_like(like: LikeRequest, session_token: Optional[str] = Cookie(None)):
+    print(f"DEBUG: toggle_like called. Body: {like}, Cookie: {session_token}")
     try:
+        # Verify user from session
+        user_id = get_user_from_session(session_token)
+        print(f"DEBUG: User from session: {user_id}")
+        
+        if not user_id:
+            print("DEBUG: No user_id from session -> 401")
+            raise HTTPException(status_code=401, detail="Not authenticated")
+            
+        # Ensure the user_id in request matches session (or just use session user_id)
+        if like.user_id != user_id:
+            print(f"DEBUG: ID mismatch. Body: {like.user_id}, Session: {user_id} -> 403")
+            raise HTTPException(status_code=403, detail="User ID mismatch")
+
         conn = get_write_db_connection()
         c = conn.cursor()
         
         # Check if already liked
-        existing = c.execute("SELECT * FROM likes WHERE user_id = ? AND album_id = ?", (like.user_id, like.album_id)).fetchone()
+        existing = c.execute("SELECT * FROM likes WHERE user_id = ? AND album_id = ?", (user_id, like.album_id)).fetchone()
+        print(f"DEBUG: Existing like found? {existing is not None}")
         
         if existing:
-            c.execute("DELETE FROM likes WHERE user_id = ? AND album_id = ?", (like.user_id, like.album_id))
+            c.execute("DELETE FROM likes WHERE user_id = ? AND album_id = ?", (user_id, like.album_id))
             status = "unliked"
         else:
-            c.execute("INSERT INTO likes (user_id, album_id) VALUES (?, ?)", (like.user_id, like.album_id))
+            c.execute("INSERT INTO likes (user_id, album_id) VALUES (?, ?)", (user_id, like.album_id))
             status = "liked"
             
         conn.commit()
         conn.close()
+        print(f"DEBUG: Success. New status: {status}")
         return {"status": status}
+    except HTTPException as he:
+        raise he
     except Exception as e:
+        print(f"DEBUG: Exception: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/users/{user_id}/likes", response_model=List[Album])
@@ -280,7 +299,8 @@ async def get_user_likes(user_id: int):
 async def get_albums(
     session_token: Optional[str] = Cookie(None),
     limit: int = 40,
-    offset: int = 0
+    offset: int = 0,
+    genre: Optional[str] = None
 ):
     """
     Get albums with pagination support.
@@ -289,6 +309,7 @@ async def get_albums(
         session_token: Session cookie for personalized recommendations
         limit: Number of albums to return (default: 40, max: 100)
         offset: Number of albums to skip (default: 0)
+        genre: Optional genre name to filter by
     
     Returns:
         {
@@ -309,16 +330,36 @@ async def get_albums(
         conn = get_db_connection()
         c = conn.cursor()
         
-        # Get total count
-        total_count = c.execute('SELECT COUNT(*) as count FROM albums').fetchone()['count']
-        
-        # Get all albums with artist names (for scoring)
-        albums_data = c.execute('''
-            SELECT a.*, ar.name as artist_name 
-            FROM albums a 
-            JOIN artists ar ON a.artist_id = ar.id
-            ORDER BY a.rank ASC
-        ''').fetchall()
+        # Get total count and albums data
+        if genre:
+            # Filter by genre
+            total_count = c.execute('''
+                SELECT COUNT(DISTINCT a.id) as count 
+                FROM albums a
+                JOIN album_genres ag ON a.id = ag.album_id
+                JOIN genres g ON ag.genre_id = g.id
+                WHERE g.name = ?
+            ''', (genre,)).fetchone()['count']
+            
+            albums_data = c.execute('''
+                SELECT DISTINCT a.*, ar.name as artist_name 
+                FROM albums a 
+                JOIN artists ar ON a.artist_id = ar.id
+                JOIN album_genres ag ON a.id = ag.album_id
+                JOIN genres g ON ag.genre_id = g.id
+                WHERE g.name = ?
+                ORDER BY a.rank ASC
+            ''', (genre,)).fetchall()
+        else:
+            # No filter
+            total_count = c.execute('SELECT COUNT(*) as count FROM albums').fetchone()['count']
+            
+            albums_data = c.execute('''
+                SELECT a.*, ar.name as artist_name 
+                FROM albums a 
+                JOIN artists ar ON a.artist_id = ar.id
+                ORDER BY a.rank ASC
+            ''').fetchall()
         
         # Get all genres
         all_genres = c.execute('''
