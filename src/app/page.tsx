@@ -10,8 +10,9 @@ export const metadata: Metadata = {
 };
 
 async function getAlbums() {
-  // Use relative URL by default, or NEXT_PUBLIC_API_URL if set
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
+  // In Vercel, use absolute URL for SSR
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL
+    || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : '');
 
   // Get cookies from the request to forward to API
   const cookieStore = await cookies();
