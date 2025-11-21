@@ -8,8 +8,9 @@ interface Props {
 }
 
 async function getGenreAlbums(genre: string) {
-    // Use relative URL by default, or NEXT_PUBLIC_API_URL if set
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
+    // In Vercel, use absolute URL for SSR
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL
+        || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : '');
 
     const res = await fetch(`${baseUrl}/api/albums?genre=${encodeURIComponent(genre)}&limit=40`, {
         cache: 'no-store'
