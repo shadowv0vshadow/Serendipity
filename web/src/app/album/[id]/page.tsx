@@ -8,8 +8,9 @@ import AlbumDetailClient from '@/components/AlbumDetailClient';
 
 
 async function getAlbum(id: string) {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL
-        || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://127.0.0.1:8000');
+    // In production (Vercel), use relative URL if NEXT_PUBLIC_API_URL not set
+    // This ensures API calls go to the same domain
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
     const res = await fetch(`${baseUrl}/api/albums/${id}`, { cache: 'no-store' });
     if (!res.ok) {
         if (res.status === 404) return null;
