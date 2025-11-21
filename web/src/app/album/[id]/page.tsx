@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { Album } from '@/types';
+import AlbumDetailClient from '@/components/AlbumDetailClient';
 
 
 async function getAlbum(id: string) {
@@ -26,7 +27,7 @@ export default async function AlbumDetail({ params }: { params: Promise<{ id: st
     }
 
     return (
-        <div className="min-h-screen bg-[#111] text-[#eee] font-sans">
+        <div className="min-h-screen bg-[#111] text-[#eee] font-sans pt-12">
             <div className="container mx-auto px-6 py-12 max-w-5xl">
                 <Link
                     href="/"
@@ -40,7 +41,7 @@ export default async function AlbumDetail({ params }: { params: Promise<{ id: st
                     <div className="w-full md:w-1/2">
                         <div className="relative aspect-square w-full rounded-xl overflow-hidden shadow-2xl border border-gray-800">
                             <Image
-                                src={album.image_path}
+                                src={encodeURI(album.image_path)}
                                 alt={album.title}
                                 fill
                                 className="object-cover"
@@ -77,6 +78,11 @@ export default async function AlbumDetail({ params }: { params: Promise<{ id: st
                                     ))}
                                 </div>
                             </div>
+                        </div>
+
+                        {/* Like Button */}
+                        <div className="mb-10">
+                            <AlbumDetailClient album={album} />
                         </div>
 
                         <div className="space-y-6">

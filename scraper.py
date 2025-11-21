@@ -57,26 +57,53 @@ def save_to_db(items):
             c.execute('SELECT id FROM artists WHERE name = ?', (item['Artist'],))
             artist_id = c.fetchone()[0]
             
-            # 2. Insert Album
-            c.execute('''
-                INSERT INTO albums (title, artist_id, rank, release_date, rating, ratings_count, image_path, spotify_link, youtube_link, apple_music_link)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (
-                item['Album'], artist_id, item['Rank'], item['Date'], item['Rating'], 
-                item['Ratings Count'], item.get('Local Image'), 
-                item.get('Spotify'), item.get('YouTube'), item.get('Apple Music')
-            ))
-            album_id = c.lastrowid
+            # 2. Check if Album exists
+            c.execute('SELECT id FROM albums WHERE title = ? AND artist_id = ?', (item['Album'], artist_id))
+            existing_album = c.fetchone()
+            
+            if existing_album:
+                album_id = existing_album[0]
+                # Update existing album
+                c.execute('''
+                    UPDATE albums 
+                    SET rank = ?, release_date = ?, rating = ?, ratings_count = ?, image_path = ?, spotify_link = ?, youtube_link = ?, apple_music_link = ?
+                    WHERE id = ?
+                ''', (
+                    item['Rank'], item['Date'], item['Rating'], item['Ratings Count'], 
+                    item.get('Local Image'), item.get('Spotify'), item.get('YouTube'), item.get('Apple Music'),
+                    album_id
+                ))
+            else:
+                # Insert new album
+                c.execute('''
+                    INSERT INTO albums (title, artist_id, rank, release_date, rating, ratings_count, image_path, spotify_link, youtube_link, apple_music_link)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (
+                    item['Album'], artist_id, item['Rank'], item['Date'], item['Rating'], 
+                    item['Ratings Count'], item.get('Local Image'), 
+                    item.get('Spotify'), item.get('YouTube'), item.get('Apple Music')
+                ))
+                album_id = c.lastrowid
             
             # 3. Insert Genres and Link to Album
-            if item['Genres']:
-                for genre_name in item['Genres'].split(', '):
+            # Clear existing genres for this album to avoid stale data
+            c.execute('DELETE FROM album_genres WHERE album_id = ?', (album_id,))
+            
+            # Helper to insert genres
+            def insert_genres(genre_list, is_primary):
+                for genre_name in genre_list:
                     genre_name = genre_name.strip()
+                    if not genre_name: continue
+                    
                     c.execute('INSERT OR IGNORE INTO genres (name) VALUES (?)', (genre_name,))
                     c.execute('SELECT id FROM genres WHERE name = ?', (genre_name,))
                     genre_id = c.fetchone()[0]
                     
-                    c.execute('INSERT OR IGNORE INTO album_genres (album_id, genre_id) VALUES (?, ?)', (album_id, genre_id))
+                    c.execute('INSERT OR IGNORE INTO album_genres (album_id, genre_id, is_primary) VALUES (?, ?, ?)', 
+                              (album_id, genre_id, is_primary))
+
+            insert_genres(item['Primary Genres'], True)
+            insert_genres(item['Secondary Genres'], False)
                     
         except Exception as e:
             print(f"Error saving item {item['Album']} to DB: {e}")
@@ -85,15 +112,15 @@ def save_to_db(items):
     conn.close()
     print("Data saved to database.")
 
-def parse_page(html):
+def parse_page(html, start_rank=1):
     soup = BeautifulSoup(html, 'html.parser')
     items = []
     
     chart_items = soup.select('.page_section_charts_item_wrapper')
     
-    for idx, item in enumerate(chart_items, 1):
+    for idx, item in enumerate(chart_items, start_rank):
         try:
-            # ... (keep existing extraction logic for title, artist, date, rating, num_ratings, genres)
+            # ... (keep existing extraction logic)
             title_elem = item.select_one('.page_charts_section_charts_item_title a.release')
             title = title_elem.get_text(strip=True) if title_elem else None
             
@@ -109,12 +136,19 @@ def parse_page(html):
             num_ratings_elem = item.select_one('.page_charts_section_charts_item_details_ratings .abbr')
             num_ratings = num_ratings_elem.get_text(strip=True) if num_ratings_elem else None
             
-            genres = []
-            genre_elems = item.select('.page_charts_section_charts_item_genres_primary .genre, .page_charts_section_charts_item_genres_secondary .genre')
-            for g in genre_elems:
-                genres.append(g.get_text(strip=True))
+            # Genres
+            primary_genres = []
+            secondary_genres = []
             
-            # Image URL (keep existing logic)
+            p_elems = item.select('.page_charts_section_charts_item_genres_primary .genre')
+            for g in p_elems:
+                primary_genres.append(g.get_text(strip=True))
+                
+            s_elems = item.select('.page_charts_section_charts_item_genres_secondary .genre')
+            for g in s_elems:
+                secondary_genres.append(g.get_text(strip=True))
+            
+            # Image URL
             img_elem = item.select_one('.page_charts_section_charts_item_image img')
             img_url = None
             if img_elem:
@@ -143,7 +177,7 @@ def parse_page(html):
                     # Spotify
                     if 'spotify' in links_data:
                         for key, val in links_data['spotify'].items():
-                            if val.get('default'): # simplified logic
+                            if val.get('default'): 
                                 spotify = f"https://open.spotify.com/{val.get('type', 'album')}/{key}"
                                 break
                     
@@ -158,7 +192,7 @@ def parse_page(html):
                          for key, val in links_data['applemusic'].items():
                              apple = f"https://music.apple.com/{val.get('loc', 'us')}/album/{val.get('album', '')}/{key}"
                              break
-                             
+                              
                 except Exception as e:
                     print(f"Error parsing links: {e}")
 
@@ -169,7 +203,9 @@ def parse_page(html):
                 'Date': date,
                 'Rating': rating,
                 'Ratings Count': num_ratings,
-                'Genres': ", ".join(genres),
+                'Primary Genres': primary_genres,
+                'Secondary Genres': secondary_genres,
+                'Genres': ", ".join(primary_genres + secondary_genres), # Keep for backward compat if needed
                 'Image URL': img_url,
                 'Spotify': spotify,
                 'YouTube': youtube,
@@ -212,33 +248,51 @@ def download_images(items):
         time.sleep(0.1)
 
 def main():
-    # ... (keep existing main loop)
+    # Check if cookie exists
+    if not load_file_content('cookie.txt'):
+        print("Error: cookie.txt is missing or empty. Please add your RYM cookie.")
+        return
+
     base_url = "https://rateyourmusic.com/charts/top/album/all-time"
     
     all_items = []
-    max_pages = 3 
+    max_pages = 125 # 5000 items / 40 per page
     
     for page in range(1, max_pages + 1):
-        print(f"--- Processing Page {page} ---")
+        print(f"--- Processing Page {page}/{max_pages} ---")
         url = f"{base_url}/{page}" if page > 1 else base_url
         
         html = get_html(url)
         if html:
-            items = parse_page(html)
-            all_items.extend(items)
-            print(f"Found {len(items)} items on page {page}.")
+            # Calculate start rank for this page
+            start_rank = (page - 1) * 40 + 1
+            items = parse_page(html, start_rank)
+            
+            if items:
+                print(f"Found {len(items)} items on page {page}.")
+                
+                # Process immediately to save progress
+                download_images(items)
+                save_to_db(items)
+                
+                all_items.extend(items)
+            else:
+                print(f"No items found on page {page}. Possible captcha or end of list.")
+                break
+                
             if page < max_pages:
-                time.sleep(3)
+                sleep_time = 5
+                print(f"Sleeping for {sleep_time} seconds...")
+                time.sleep(sleep_time)
         else:
+            print("Failed to retrieve HTML. Stopping.")
             break
             
     if all_items:
-        download_images(all_items)
-        save_to_db(all_items) # New DB saving function
-        
         # Optional: still save CSV for backup
         df = pd.DataFrame(all_items)
         df.to_csv("rym_chart_all_time.csv", index=False)
+        print(f"Scraping complete. {len(all_items)} items saved.")
     else:
         print("No data collected.")
 
