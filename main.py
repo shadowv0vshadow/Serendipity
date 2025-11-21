@@ -16,14 +16,14 @@ app = FastAPI(title="slowdive API")
 # Enable CORS for Next.js frontend with credentials support
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://0.0.0.0:3000"],
     allow_credentials=True,  # Important for cookies
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # Mount covers directory (now in web/public/covers for Next.js static serving)
-covers_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "web", "public", "covers")
+covers_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "public", "covers")
 app.mount("/covers", StaticFiles(directory=covers_path), name="covers")
 
 class Album(BaseModel):

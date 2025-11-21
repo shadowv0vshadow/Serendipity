@@ -11,8 +11,7 @@ export const metadata: Metadata = {
 
 async function getAlbums() {
   // In Vercel, use absolute URL for SSR
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL
-    || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : '');
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'development' ? 'http://127.0.0.1:8000' : (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : ''));
 
   // Get cookies from the request to forward to API
   const cookieStore = await cookies();
