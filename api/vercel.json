@@ -1,9 +1,13 @@
 {
-    "functions": {
-        "*.py": {
-            "includeFiles": "rym.db"
+    "builds": [
+        {
+            "src": "index.py",
+            "use": "@vercel/python",
+            "config": {
+                "includeFiles": "rym.db"
+            }
         }
-    },
+    ],
     "routes": [
         {
             "src": "/(.*)",
