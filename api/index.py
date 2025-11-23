@@ -98,9 +98,23 @@ def get_db_connection():
         except Exception as e:
             print(f"DEBUG: Error listing directory: {e}")
             
-    conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
-    conn.row_factory = sqlite3.Row
-    return conn
+    try:
+        conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
+        conn.row_factory = sqlite3.Row
+        return conn
+    except sqlite3.OperationalError as e:
+        print(f"ERROR: SQLite connection failed: {e}")
+        # Fallback to standard connection if URI mode fails
+        try:
+            conn = sqlite3.connect(db_path)
+            conn.row_factory = sqlite3.Row
+            return conn
+        except Exception as e2:
+            print(f"ERROR: Fallback connection failed: {e2}")
+            raise HTTPException(status_code=500, detail=f"Database connection failed: {str(e)}")
+    except Exception as e:
+        print(f"ERROR: Unexpected database error: {e}")
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
 def get_write_db_connection():
     db_path = get_db_path()
