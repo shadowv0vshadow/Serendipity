@@ -27,7 +27,7 @@ def get_postgres_conn():
         
         host = os.environ.get("POSTGRES_HOST", env_vars.get("POSTGRES_HOST", "***REMOVED***"))
         user = os.environ.get("POSTGRES_USER", env_vars.get("POSTGRES_USER", "myuser"))
-        password = os.environ.get("POSTGRES_PASSWORD", env_vars.get("POSTGRES_PASSWORD", "***REMOVED***"))
+        password = os.environ.get("POSTGRES_PASSWORD", env_vars.get("POSTGRES_PASSWORD", ""))  # Must be set
         dbname = os.environ.get("POSTGRES_DATABASE", env_vars.get("POSTGRES_DATABASE", "rym_db"))
         port = os.environ.get("POSTGRES_PORT", env_vars.get("POSTGRES_PORT", "5432"))
         

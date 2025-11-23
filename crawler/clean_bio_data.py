@@ -13,7 +13,7 @@ def get_db_connection():
         host=os.environ.get('POSTGRES_HOST', '***REMOVED***'),
         database=os.environ.get('POSTGRES_DATABASE', os.environ.get('POSTGRES_DB', 'musicdb')),
         user=os.environ.get('POSTGRES_USER', 'myuser'),
-        password=os.environ.get('POSTGRES_PASSWORD', '***REMOVED***')
+        password=os.environ.get('POSTGRES_PASSWORD', ''),  # Must be set in environment
     )
 
 def clean_biography_data():

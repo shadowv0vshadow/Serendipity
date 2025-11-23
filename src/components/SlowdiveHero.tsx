@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import AuthModal from './AuthModal';
 import { getApiBaseUrl } from '@/lib/api-config';
 
@@ -14,7 +14,9 @@ export default function SlowdiveHero() {
     const [searchQuery, setSearchQuery] = useState('');
     const [isVisible, setIsVisible] = useState(true);
     const [lastScrollY, setLastScrollY] = useState(0);
+    const [isDiving, setIsDiving] = useState(false);
     const router = useRouter();
+    const pathname = usePathname();
 
     useEffect(() => {
         const stored = localStorage.getItem('user');
@@ -73,6 +75,25 @@ export default function SlowdiveHero() {
         }
     };
 
+    const handleLogoClick = (e: React.MouseEvent) => {
+        e.preventDefault();
+
+        // Only animate if not already on home page
+        if (pathname !== '/') {
+            setIsDiving(true);
+
+            // Navigate after animation starts
+            setTimeout(() => {
+                router.push('/');
+            }, 400);
+
+            // Reset animation state
+            setTimeout(() => {
+                setIsDiving(false);
+            }, 1000);
+        }
+    };
+
     // Background opacity: 0 at top, 0.9 after scrolling 100px
     const bgOpacity = useTransform(scrollY, [0, 100], [0, 0.9]);
     // Border opacity: 0 at top, 0.1 after scrolling 100px
@@ -96,16 +117,49 @@ export default function SlowdiveHero() {
                 className="fixed top-0 left-0 w-full z-50 border-b border-transparent"
             >
                 <div className="w-full px-4 sm:px-6 md:px-8 h-16 flex items-center justify-between gap-3 sm:gap-4">
-                    <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer flex-shrink-0">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white">
+                    <motion.a
+                        href="/"
+                        onClick={handleLogoClick}
+                        className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer flex-shrink-0 relative"
+                        animate={isDiving ? {
+                            y: [0, 5, 15, 30, 50, 80],
+                            opacity: [1, 0.9, 0.7, 0.4, 0.2, 0],
+                            scale: [1, 0.98, 0.95, 0.9, 0.85, 0.8],
+                        } : {
+                            y: 0,
+                            opacity: 1,
+                            scale: 1,
+                        }}
+                        transition={{
+                            duration: 0.6,
+                            ease: [0.4, 0.0, 0.6, 1], // Custom easing for dive effect
+                        }}
+                    >
+                        <motion.svg
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            className="text-white"
+                            animate={isDiving ? {
+                                rotate: [0, 5, 10, 15, 20, 25],
+                            } : {
+                                rotate: 0,
+                            }}
+                            transition={{
+                                duration: 0.6,
+                            }}
+                        >
                             <circle cx="12" cy="12" r="10" />
                             <path d="M12 8v8" />
                             <path d="M8 12l4 4 4-4" />
-                        </svg>
+                        </motion.svg>
                         <h1 className="text-lg sm:text-xl font-bold tracking-widest text-white uppercase hidden sm:block">
                             SLOWDIVE
                         </h1>
-                    </Link>
+                    </motion.a>
 
                     {/* Search Bar */}
                     <form onSubmit={handleSearch} className="flex-1 max-w-md">

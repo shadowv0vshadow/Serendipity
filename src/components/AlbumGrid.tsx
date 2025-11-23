@@ -18,9 +18,21 @@ export default function AlbumGrid({ allAlbums, genre, disableInfiniteScroll = fa
     const [isLoading, setIsLoading] = useState(false);
     const [hasMore, setHasMore] = useState(!disableInfiniteScroll);
 
+    // Dynamic batch size based on screen width
+    const getBatchSize = () => {
+        if (typeof window === 'undefined') return 40;
+        const width = window.innerWidth;
+        if (width >= 1536) return 60; // 2xl: 10 columns
+        if (width >= 1280) return 50; // xl: 10 columns
+        if (width >= 1024) return 40; // lg: 8 columns
+        if (width >= 768) return 30;  // md: 6 columns
+        if (width >= 640) return 20;  // sm: 4 columns
+        return 15; // mobile: 3 columns
+    };
+
     const { ref, inView } = useInView({
         threshold: 0,
-        rootMargin: '200px',
+        rootMargin: '400px', // Load earlier (was 200px)
     });
 
     const loadMoreAlbums = async () => {
@@ -29,7 +41,8 @@ export default function AlbumGrid({ allAlbums, genre, disableInfiniteScroll = fa
         setIsLoading(true);
         try {
             const baseUrl = getApiBaseUrl();
-            let url = `${baseUrl}/api/albums?limit=20&offset=${offset}`;
+            const batchSize = getBatchSize();
+            let url = `${baseUrl}/api/albums?limit=${batchSize}&offset=${offset}`;
             if (genre) {
                 url += `&genre=${encodeURIComponent(genre)}`;
             }
@@ -63,7 +76,7 @@ export default function AlbumGrid({ allAlbums, genre, disableInfiniteScroll = fa
         if (inView && hasMore && !isLoading && !disableInfiniteScroll) {
             loadMoreAlbums();
         }
-    }, [inView]);
+    }, [inView, hasMore, isLoading, disableInfiniteScroll]);
 
     // Reset when genre changes
     useEffect(() => {

@@ -6,7 +6,7 @@ services:
     restart: always
     environment:
       POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: ***REMOVED***
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}  # Set in .env file
       POSTGRES_DB: rym_db
     ports:
       - "5432:5432"
@@ -22,9 +22,9 @@ services:
     environment:
       PGHOST: db
       PGUSER: myuser
-      PGPASSWORD: ***REMOVED***
+      PGPASSWORD: ${POSTGRES_PASSWORD}  # Set in .env file
       PGDATABASE: rym_db
-    command: ["pghost", "db"] # This is a placeholder, usually you run interactive commands
+    command: ["sh", "-c", "sleep infinity"]  # Keep container running
 
 volumes:
   postgres_data:

@@ -18,7 +18,7 @@ async function getAlbums() {
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get('session_token');
 
-  const res = await fetch(`${baseUrl}/api/albums?limit=40&offset=0`, {
+  const res = await fetch(`${baseUrl}/api/albums?limit=80&offset=0`, {
     next: { revalidate: 1800 }, // Cache for 30 minutes (1800 seconds)
     credentials: 'include',
     headers: {

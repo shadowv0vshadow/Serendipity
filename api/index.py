@@ -84,12 +84,11 @@ class LikeRequest(BaseModel):
 
 # PostgreSQL Connection
 # Vercel provides POSTGRES_URL, POSTGRES_USER, POSTGRES_HOST, POSTGRES_PASSWORD, POSTGRES_DATABASE
-# We can construct the URL or use individual params.
-# For manual deployment, we expect a connection string or params.
-DB_HOST = os.environ.get("POSTGRES_HOST", "***REMOVED***")
-DB_USER = os.environ.get("POSTGRES_USER", "myuser")
-DB_PASSWORD = os.environ.get("POSTGRES_PASSWORD", "***REMOVED***")
-DB_NAME = os.environ.get("POSTGRES_DATABASE", "rym_db")
+# For local development, use environment variables from .env.local
+DB_HOST = os.environ.get("POSTGRES_HOST", "localhost")
+DB_USER = os.environ.get("POSTGRES_USER", "postgres")
+DB_NAME = os.environ.get("POSTGRES_DATABASE") or os.environ.get("POSTGRES_DB", "musicdb")
+DB_PASSWORD = os.environ.get("POSTGRES_PASSWORD", "")  # Must be set in environment
 DB_PORT = os.environ.get("POSTGRES_PORT", "5432")
 
 def get_db_connection():

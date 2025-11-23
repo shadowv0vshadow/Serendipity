@@ -5,7 +5,7 @@ import sys
 # Remote Postgres DB Credentials
 DB_HOST = os.environ.get("POSTGRES_HOST", "***REMOVED***")
 DB_USER = os.environ.get("POSTGRES_USER", "myuser")
-DB_PASSWORD = os.environ.get("POSTGRES_PASSWORD", "***REMOVED***")
+DB_PASSWORD = os.environ.get("POSTGRES_PASSWORD", "")  # Must be set in environment
 DB_NAME = os.environ.get("POSTGRES_DATABASE", "rym_db")
 DB_PORT = os.environ.get("POSTGRES_PORT", "5432")
 

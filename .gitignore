@@ -18,7 +18,7 @@ __pycache__/
 # Next.js
 node_modules/
 .next/
-.env.local
+out/
 
 # Database and data
 *.db
@@ -26,10 +26,16 @@ node_modules/
 
 # Sensitive files
 cookie.txt
-
-# Keep rym.db (database) and covers/ (album images) for deployment.
-# If they become large, consider using Git LFS for api/rym.db and public/covers/.if needed)
 .env*
+!.env.example
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Debug files
+debug_*.html
+debug_*.json
 
 # vercel
 .vercel
@@ -38,5 +44,12 @@ cookie.txt
 *.tsbuildinfo
 next-env.d.ts
 
-# 添加到 .gitignore
-.env.local
+# Docker
+docker-compose.override.yml
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
