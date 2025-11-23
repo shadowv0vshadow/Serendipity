@@ -62,10 +62,7 @@ class LikeRequest(BaseModel):
     album_id: int
 
 def get_db_path() -> str:
-    # Database is located in the same directory as this file (api/rym.db)
-    # When deployed on Vercel, __file__ might be /var/task/api/index.py
-    # So dirname is /var/task/api
-    # And db is at /var/task/api/rym.db
+    # Database is located in the same directory as this file (python_api/rym.db)
     path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "rym.db")
     print(f"DEBUG: DB path: {path}")
     return path
