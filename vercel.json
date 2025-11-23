@@ -1,11 +1,18 @@
 {
-    "framework": "nextjs",
-    "buildCommand": "next build",
-    "installCommand": "npm install",
-    "rewrites": [
+    "builds": [
         {
-            "source": "/api/:path*",
-            "destination": "/api/index.py"
+            "src": "api/index.py",
+            "use": "@vercel/python"
+        },
+        {
+            "src": "package.json",
+            "use": "@vercel/next"
+        }
+    ],
+    "routes": [
+        {
+            "src": "/api/(.*)",
+            "dest": "/api/index.py"
         }
     ]
 }
