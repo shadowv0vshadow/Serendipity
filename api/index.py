@@ -80,40 +80,40 @@ class LikeRequest(BaseModel):
     user_id: int
     album_id: int
 
+import shutil
+
 def get_db_path() -> str:
-    # Database is located in the same directory as this file (api/rym.db)
-    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "rym.db")
-    return path
+    # Source database path (read-only in Vercel)
+    source_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "rym.db")
+    
+    # Destination path in /tmp (writable)
+    # Note: /tmp is ephemeral and data will be lost on cold starts
+    tmp_path = "/tmp/rym.db"
+    
+    if not os.path.exists(tmp_path):
+        if os.path.exists(source_path):
+            try:
+                shutil.copy2(source_path, tmp_path)
+                print(f"DEBUG: Copied database to {tmp_path}")
+            except Exception as e:
+                print(f"ERROR: Failed to copy database to /tmp: {e}")
+                return source_path # Fallback to read-only source
+        else:
+            print(f"ERROR: Source database not found at {source_path}")
+            return source_path
+            
+    return tmp_path
 
 def get_db_connection():
-    # Use absolute path to ensure we connect to the correct DB
     db_path = get_db_path()
-    if not os.path.exists(db_path):
-        print(f"ERROR: Database file not found at {db_path}")
-        # List directory contents to debug
-        dir_path = os.path.dirname(db_path)
-        print(f"DEBUG: Contents of {dir_path}:")
-        try:
-            print(os.listdir(dir_path))
-        except Exception as e:
-            print(f"DEBUG: Error listing directory: {e}")
-            
+    # ... existing connection logic ...
     try:
-        conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
+        # Connect to the writable path
+        conn = sqlite3.connect(db_path)
         conn.row_factory = sqlite3.Row
         return conn
-    except sqlite3.OperationalError as e:
-        print(f"ERROR: SQLite connection failed: {e}")
-        # Fallback to standard connection if URI mode fails
-        try:
-            conn = sqlite3.connect(db_path)
-            conn.row_factory = sqlite3.Row
-            return conn
-        except Exception as e2:
-            print(f"ERROR: Fallback connection failed: {e2}")
-            raise HTTPException(status_code=500, detail=f"Database connection failed: {str(e)}")
     except Exception as e:
-        print(f"ERROR: Unexpected database error: {e}")
+        print(f"ERROR: Database connection error: {e}")
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
 def get_write_db_connection():
