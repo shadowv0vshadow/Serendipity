@@ -631,8 +631,4 @@ async def get_album(album_id: int, user_id: Optional[int] = None):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# Export handler for Vercel using Mangum adapter
-# Mangum converts ASGI app to AWS Lambda/API Gateway format (compatible with Vercel)
-from mangum import Mangum
 
-handler = Mangum(app, lifespan="off")
