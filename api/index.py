@@ -1,3 +1,4 @@
+print("DEBUG: Loading api/index.py...")
 from fastapi import FastAPI, HTTPException, Header, Response, Cookie
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
