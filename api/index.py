@@ -277,10 +277,15 @@ async def register(user: UserRegister, response: Response):
         
         # Create session and set cookie
         session_token = create_session(user_id)
+        
+        # Detect if running in production (HTTPS)
+        is_production = os.environ.get("VERCEL_ENV") == "production" or os.environ.get("NODE_ENV") == "production"
+        
         response.set_cookie(
             key="session_token",
             value=session_token,
             httponly=True,
+            secure=is_production,  # Require HTTPS in production
             max_age=30 * 24 * 60 * 60,  # 30 days
             samesite="lax"
         )
@@ -313,10 +318,15 @@ async def login(user: UserLogin, response: Response):
     
     # Create session and set cookie
     session_token = create_session(user_record['id'])
+    
+    # Detect if running in production (HTTPS)
+    is_production = os.environ.get("VERCEL_ENV") == "production" or os.environ.get("NODE_ENV") == "production"
+    
     response.set_cookie(
         key="session_token",
         value=session_token,
         httponly=True,
+        secure=is_production,  # Require HTTPS in production
         max_age=30 * 24 * 60 * 60,  # 30 days
         samesite="lax"
     )
