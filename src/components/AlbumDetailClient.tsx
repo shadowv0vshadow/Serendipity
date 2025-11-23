@@ -85,13 +85,16 @@ export default function AlbumDetailClient({ album }: AlbumDetailClientProps) {
         <>
             <button
                 onClick={toggleLike}
-                className="group flex items-center gap-2 px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all duration-200"
+                className={`group flex items-center gap-3 px-8 py-4 rounded-xl transition-all duration-200 font-medium ${isLiked
+                        ? 'bg-red-500/20 border-2 border-red-500/50 hover:bg-red-500/30'
+                        : 'bg-white/5 backdrop-blur-md border-2 border-white/10 hover:bg-white/10 hover:border-red-500/30'
+                    }`}
                 aria-label={isLiked ? 'Unlike album' : 'Like album'}
             >
                 <svg
                     className={`w-6 h-6 transition-all duration-200 ${isLiked
                         ? 'fill-red-500 stroke-red-500'
-                        : 'fill-none stroke-gray-400 group-hover:stroke-red-400'
+                        : 'fill-none stroke-zinc-400 group-hover:stroke-red-400'
                         }`}
                     viewBox="0 0 24 24"
                     strokeWidth="2"
@@ -102,8 +105,8 @@ export default function AlbumDetailClient({ album }: AlbumDetailClientProps) {
                         d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
                     />
                 </svg>
-                <span className="text-sm font-medium text-gray-300 group-hover:text-white">
-                    {isLiked ? 'Liked' : 'Like'}
+                <span className={`text-base ${isLiked ? 'text-red-400' : 'text-zinc-300 group-hover:text-white'}`}>
+                    {isLiked ? 'Liked' : 'Add to Favorites'}
                 </span>
             </button>
 

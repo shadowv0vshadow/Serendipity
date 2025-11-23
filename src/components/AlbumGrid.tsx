@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useInView } from 'framer-motion';
-import { useRef } from 'react';
+import { useInView } from 'react-intersection-observer';
 import AlbumCard from './AlbumCard';
 import { Album } from '@/types';
 import { getApiBaseUrl } from '@/lib/api-config';
@@ -10,75 +9,68 @@ import { getApiBaseUrl } from '@/lib/api-config';
 interface AlbumGridProps {
     allAlbums: Album[];
     genre?: string;
+    disableInfiniteScroll?: boolean;
 }
 
-const ITEMS_PER_PAGE = 40;
-
-export default function AlbumGrid({ allAlbums, genre }: AlbumGridProps) {
+export default function AlbumGrid({ allAlbums, genre, disableInfiniteScroll = false }: AlbumGridProps) {
     const [albums, setAlbums] = useState<Album[]>(allAlbums);
-    const [offset, setOffset] = useState(ITEMS_PER_PAGE);
-    const [hasMore, setHasMore] = useState(true);
+    const [offset, setOffset] = useState(allAlbums.length);
     const [isLoading, setIsLoading] = useState(false);
-    const [userId, setUserId] = useState<number | null>(null);
+    const [hasMore, setHasMore] = useState(!disableInfiniteScroll);
 
-    const loadMoreRef = useRef(null);
-    const isInView = useInView(loadMoreRef, { margin: "200px" });
+    const { ref, inView } = useInView({
+        threshold: 0,
+        rootMargin: '200px',
+    });
 
-    // Get user ID from localStorage (for loading more pages)
-    useEffect(() => {
-        const stored = localStorage.getItem('user');
-        if (stored) {
-            const user = JSON.parse(stored);
-            setUserId(user.id);
-        }
-    }, []);
+    const loadMoreAlbums = async () => {
+        if (isLoading || !hasMore || disableInfiniteScroll) return;
 
-    // Reset state when genre changes
-    useEffect(() => {
-        setAlbums(allAlbums);
-        setOffset(ITEMS_PER_PAGE);
-        setHasMore(true);
-    }, [genre, allAlbums]);
-
-    // Load more when scrolling
-    useEffect(() => {
-        if (isInView && hasMore && !isLoading) {
-            loadMore();
-        }
-    }, [isInView, hasMore, isLoading]);
-
-
-
-    const loadMore = async () => {
         setIsLoading(true);
-        const baseUrl = getApiBaseUrl();
-
         try {
-            let url = `${baseUrl}/api/albums?limit=${ITEMS_PER_PAGE}&offset=${offset}`;
-            if (userId) url += `&user_id=${userId}`;
-            if (genre) url += `&genre=${encodeURIComponent(genre)}`;
+            const baseUrl = getApiBaseUrl();
+            let url = `${baseUrl}/api/albums?limit=20&offset=${offset}`;
+            if (genre) {
+                url += `&genre=${encodeURIComponent(genre)}`;
+            }
 
-            const res = await fetch(url);
+            const res = await fetch(url, {
+                cache: 'no-store',
+            });
+
             if (res.ok) {
                 const data = await res.json();
-                setAlbums(prev => {
-                    // Filter out any duplicates that might have been fetched
-                    const newAlbums = data.albums.filter((newAlbum: Album) =>
-                        !prev.some(existingAlbum => existingAlbum.id === newAlbum.id)
-                    );
-                    return [...prev, ...newAlbums];
-                });
-                setOffset(prev => prev + ITEMS_PER_PAGE);
-                setHasMore(data.has_more);
+                const newAlbums = data.albums;
+
+                if (newAlbums.length === 0) {
+                    setHasMore(false);
+                } else {
+                    setAlbums(prev => [...prev, ...newAlbums]);
+                    setOffset(prev => prev + newAlbums.length);
+                }
+            } else {
+                setHasMore(false);
             }
-        } catch (e) {
-            console.error("Failed to load more albums", e);
-            // Prevent infinite loop by stopping further loads on error
+        } catch (error) {
+            console.error('Error loading more albums:', error);
             setHasMore(false);
         } finally {
             setIsLoading(false);
         }
     };
+
+    useEffect(() => {
+        if (inView && hasMore && !isLoading && !disableInfiniteScroll) {
+            loadMoreAlbums();
+        }
+    }, [inView]);
+
+    // Reset when genre changes
+    useEffect(() => {
+        setAlbums(allAlbums);
+        setOffset(allAlbums.length);
+        setHasMore(!disableInfiniteScroll);
+    }, [genre, allAlbums, disableInfiniteScroll]);
 
     return (
         <div className="w-full z-10 relative pb-20">
@@ -89,16 +81,22 @@ export default function AlbumGrid({ allAlbums, genre }: AlbumGridProps) {
                 ))}
             </div>
 
-            {/* Loading trigger element */}
-            {hasMore && (
-                <div ref={loadMoreRef} className="w-full h-20 flex items-center justify-center mt-8">
-                    <div className="w-8 h-8 border-4 border-white/20 border-t-white rounded-full animate-spin" />
+            {/* Loading indicator */}
+            {hasMore && !disableInfiniteScroll && (
+                <div ref={ref} className="w-full py-12 flex justify-center">
+                    {isLoading && (
+                        <div className="flex flex-col items-center gap-3">
+                            <div className="w-8 h-8 border-3 border-purple-500 border-t-transparent rounded-full animate-spin" />
+                            <span className="text-sm text-zinc-400">Loading more albums...</span>
+                        </div>
+                    )}
                 </div>
             )}
 
-            {!hasMore && albums.length > 0 && (
-                <div className="w-full text-center mt-8 text-gray-500">
-                    No more albums to load
+            {/* End of content */}
+            {!hasMore && albums.length > 0 && !disableInfiniteScroll && (
+                <div className="w-full py-12 text-center text-zinc-500 text-sm">
+                    You've reached the end
                 </div>
             )}
         </div>

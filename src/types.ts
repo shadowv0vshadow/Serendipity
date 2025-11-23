@@ -14,3 +14,13 @@ export interface Album {
     genres: string[];
     is_liked?: boolean;
 }
+
+export interface Artist {
+    id: number;
+    name: string;
+    slug?: string;
+    bio?: string;
+    image_path?: string;
+    location?: string;
+    albums: Album[];
+}

@@ -1,6 +1,6 @@
 fastapi
 pydantic
 bcrypt
+psycopg2-binary
 uvicorn
 aiofiles
-

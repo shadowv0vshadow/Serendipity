@@ -3,10 +3,12 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Album } from '@/types';
 import { getApiBaseUrl } from '@/lib/api-config';
 
 export default function AlbumCard({ album }: { album: Album }) {
+    const router = useRouter();
     const [isLiked, setIsLiked] = useState(album.is_liked);
     const [isHovered, setIsHovered] = useState(false);
     const [showLoginToast, setShowLoginToast] = useState(false);
@@ -55,6 +57,7 @@ export default function AlbumCard({ album }: { album: Album }) {
                     src={encodeURI(album.image_path)}
                     alt={album.title}
                     className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110"
+                    loading="lazy"
                 />
             ) : (
                 <div className="w-full h-full flex items-center justify-center text-gray-700 text-xs">
@@ -65,7 +68,16 @@ export default function AlbumCard({ album }: { album: Album }) {
             {/* Hover Overlay */}
             <Link href={`/album/${album.id}`} className="absolute inset-0 flex flex-col items-center justify-center text-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-2 bg-black/60 backdrop-blur-[2px]">
                 <h3 className="text-white font-bold text-sm line-clamp-2 my-1">{album.title}</h3>
-                <p className="text-gray-300 text-xs line-clamp-1">{album.artist_name}</p>
+                <span
+                    className="text-gray-300 text-xs line-clamp-1 hover:text-white hover:underline z-10 relative cursor-pointer"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        router.push(`/artist/${album.artist_id}`);
+                    }}
+                >
+                    {album.artist_name}
+                </span>
             </Link>
 
             {/* Like Button - Visible on hover or if liked */}

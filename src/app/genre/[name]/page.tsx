@@ -42,12 +42,7 @@ export default async function GenrePage({ params }: Props) {
         return (
             <div className="min-h-screen bg-[#111] text-[#eee] pt-24 px-6">
                 <div className="container mx-auto max-w-7xl">
-                    <Link
-                        href="/"
-                        className="inline-block mb-8 text-gray-400 hover:text-white transition-colors text-lg"
-                    >
-                        ← Back to Home
-                    </Link>
+
                     <h1 className="text-4xl font-bold mb-8">Genre: <span className="text-purple-400">{decodedName}</span></h1>
                     <div className="text-xl text-gray-400">No albums found for this genre.</div>
                 </div>
@@ -58,12 +53,7 @@ export default async function GenrePage({ params }: Props) {
     return (
         <main className="min-h-screen bg-[#111] text-[#eee] relative pt-24">
             <div className="container mx-auto px-6 max-w-7xl">
-                <Link
-                    href="/"
-                    className="inline-block mb-8 text-gray-400 hover:text-white transition-colors text-lg"
-                >
-                    ← Back to Home
-                </Link>
+
 
                 <div className="mb-12">
                     <h1 className="text-5xl font-bold mb-4">

@@ -40,7 +40,7 @@ export default async function Home() {
   const albums = await getAlbums();
 
   return (
-    <main className="min-h-screen bg-[#111] text-[#eee] relative pt-12">
+    <main className="min-h-screen bg-[#111] text-[#eee] relative pt-16">
       <AlbumGrid allAlbums={albums} />
     </main>
   );

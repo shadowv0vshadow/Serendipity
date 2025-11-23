@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:alpine
+    restart: always
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: ***REMOVED***
+      POSTGRES_DB: rym_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # Optional: psql client to connect to the db service
+  # Run with: docker-compose run --rm psql
+  psql:
+    image: alpine/psql
+    depends_on:
+      - db
+    environment:
+      PGHOST: db
+      PGUSER: myuser
+      PGPASSWORD: ***REMOVED***
+      PGDATABASE: rym_db
+    command: ["pghost", "db"] # This is a placeholder, usually you run interactive commands
+
+volumes:
+  postgres_data:
