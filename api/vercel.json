@@ -1,6 +1,6 @@
 {
     "functions": {
-        "index.py": {
+        "*.py": {
             "runtime": "python3.11",
             "includeFiles": "rym.db"
         }
