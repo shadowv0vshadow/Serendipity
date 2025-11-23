@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Album } from '@/types';
+import { getApiBaseUrl } from '@/lib/api-config';
 
 export default function AlbumCard({ album }: { album: Album }) {
     const [isLiked, setIsLiked] = useState(album.is_liked);
@@ -26,7 +27,7 @@ export default function AlbumCard({ album }: { album: Album }) {
         const newState = !isLiked;
         setIsLiked(newState);
 
-        import { getApiBaseUrl } from '@/lib/api-config';
+
 
         try {
             const baseUrl = getApiBaseUrl();

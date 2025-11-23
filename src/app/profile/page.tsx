@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import AlbumCard from '@/components/AlbumCard';
 import { Album } from '@/types';
+import { getApiBaseUrl } from '@/lib/api-config';
 
 export default function ProfilePage() {
     const [user, setUser] = useState<{ id: number; username: string } | null>(null);
@@ -22,7 +23,7 @@ export default function ProfilePage() {
         const userData = JSON.parse(userStr);
         setUser(userData);
 
-        import { getApiBaseUrl } from '@/lib/api-config';
+
 
         // Fetch liked albums
         const fetchLikedAlbums = async () => {

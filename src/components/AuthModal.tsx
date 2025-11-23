@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getApiBaseUrl } from '@/lib/api-config';
 
 interface AuthModalProps {
     isOpen: boolean;
@@ -21,7 +22,7 @@ export default function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) 
         setError('');
         setLoading(true);
 
-        import { getApiBaseUrl } from '@/lib/api-config';
+
 
         const endpoint = isRegister ? '/api/auth/register' : '/api/auth/login';
         const baseUrl = getApiBaseUrl();

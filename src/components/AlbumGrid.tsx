@@ -5,6 +5,7 @@ import { useInView } from 'framer-motion';
 import { useRef } from 'react';
 import AlbumCard from './AlbumCard';
 import { Album } from '@/types';
+import { getApiBaseUrl } from '@/lib/api-config';
 
 interface AlbumGridProps {
     allAlbums: Album[];
@@ -46,7 +47,7 @@ export default function AlbumGrid({ allAlbums, genre }: AlbumGridProps) {
         }
     }, [isInView, hasMore, isLoading]);
 
-    import { getApiBaseUrl } from '@/lib/api-config';
+
 
     const loadMore = async () => {
         setIsLoading(true);

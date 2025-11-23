@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import Link from 'next/link';
 import AuthModal from './AuthModal';
+import { getApiBaseUrl } from '@/lib/api-config';
 
 export default function SlowdiveHero() {
     const { scrollY } = useScroll();
@@ -24,7 +25,7 @@ export default function SlowdiveHero() {
         window.location.reload();
     };
 
-    import { getApiBaseUrl } from '@/lib/api-config';
+
 
     const handleLogout = async () => {
         const baseUrl = getApiBaseUrl();

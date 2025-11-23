@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Album } from '@/types';
+import { getApiBaseUrl } from '@/lib/api-config';
 
 interface AlbumDetailClientProps {
     album: Album;
@@ -19,7 +20,7 @@ export default function AlbumDetailClient({ album }: AlbumDetailClientProps) {
             const user = JSON.parse(userStr);
             setUserId(user.id);
 
-            import { getApiBaseUrl } from '@/lib/api-config';
+
 
             // Fetch the actual like status from API
             const fetchLikeStatus = async () => {
