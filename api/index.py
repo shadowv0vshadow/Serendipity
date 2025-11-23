@@ -64,8 +64,8 @@ class LikeRequest(BaseModel):
     album_id: int
 
 def get_db_path() -> str:
-    # Database is located in api/rym.db
-    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "api", "rym.db")
+    # Database is located in the same directory as this file (api/rym.db)
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "rym.db")
 
 def get_db_connection():
     # Use absolute path to ensure we connect to the correct DB
