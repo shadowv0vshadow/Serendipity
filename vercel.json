@@ -1,24 +1,5 @@
 {
-    "installCommand": "npm install",
-    "buildCommand": "npm run build",
     "framework": "nextjs",
-    "functions": {
-        "api/index.py": {
-            "runtime": "python3.12",
-            "includeFiles": "api/rym.db"
-        }
-    },
-    "routes": [
-        {
-            "src": "/api/(.*)",
-            "dest": "/api/index.py"
-        },
-        {
-            "handle": "filesystem"
-        },
-        {
-            "src": "/(.*)",
-            "dest": "/$1"
-        }
-    ]
+    "buildCommand": "npm run build",
+    "installCommand": "npm install"
 }
