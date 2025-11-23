@@ -9,21 +9,16 @@ export const metadata: Metadata = {
   description: 'Immerse yourself in music',
 };
 
+import { getApiBaseUrl } from '@/lib/api-config';
+
 async function getAlbums() {
-  // In Vercel, use absolute URL for SSR
-  // In Vercel, use absolute URL for SSR
-  // When running `vercel dev`, process.env.VERCEL_URL might be set but we need localhost with port
-  // We prioritize localhost in development to avoid connecting to port 8000 or https issues
-  const baseUrl = process.env.NODE_ENV === 'development'
-    ? 'http://localhost:3000'
-    : (process.env.NEXT_PUBLIC_API_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : ''));
+  const baseUrl = getApiBaseUrl();
 
   // Get cookies from the request to forward to API
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get('session_token');
 
   const res = await fetch(`${baseUrl}/api/albums?limit=40&offset=0`, {
-    cache: 'no-store',
     next: { revalidate: 1800 }, // Cache for 30 minutes (1800 seconds)
     credentials: 'include',
     headers: {

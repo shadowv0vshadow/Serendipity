@@ -46,9 +46,11 @@ export default function AlbumGrid({ allAlbums, genre }: AlbumGridProps) {
         }
     }, [isInView, hasMore, isLoading]);
 
+    import { getApiBaseUrl } from '@/lib/api-config';
+
     const loadMore = async () => {
         setIsLoading(true);
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'development' ? 'http://127.0.0.1:8000' : '');
+        const baseUrl = getApiBaseUrl();
 
         try {
             let url = `${baseUrl}/api/albums?limit=${ITEMS_PER_PAGE}&offset=${offset}`;

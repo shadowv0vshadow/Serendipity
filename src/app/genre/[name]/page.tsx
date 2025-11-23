@@ -7,9 +7,11 @@ interface Props {
     params: Promise<{ name: string }>;
 }
 
+import { getApiBaseUrl } from '@/lib/api-config';
+
 async function getGenreAlbums(genre: string) {
     // In Vercel, use absolute URL for SSR
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'development' ? 'http://127.0.0.1:8000' : (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : ''));
+    const baseUrl = getApiBaseUrl();
 
     const res = await fetch(`${baseUrl}/api/albums?genre=${encodeURIComponent(genre)}&limit=40`, {
         cache: 'no-store'

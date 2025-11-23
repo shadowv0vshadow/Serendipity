@@ -22,10 +22,12 @@ export default function ProfilePage() {
         const userData = JSON.parse(userStr);
         setUser(userData);
 
+        import { getApiBaseUrl } from '@/lib/api-config';
+
         // Fetch liked albums
         const fetchLikedAlbums = async () => {
             try {
-                const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
+                const baseUrl = getApiBaseUrl();
                 const res = await fetch(`${baseUrl}/api/users/${userData.id}/likes`);
 
                 if (!res.ok) {

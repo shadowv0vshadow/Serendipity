@@ -24,8 +24,10 @@ export default function SlowdiveHero() {
         window.location.reload();
     };
 
+    import { getApiBaseUrl } from '@/lib/api-config';
+
     const handleLogout = async () => {
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
+        const baseUrl = getApiBaseUrl();
         try {
             await fetch(`${baseUrl}/api/auth/logout`, {
                 method: 'POST',

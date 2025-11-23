@@ -21,8 +21,10 @@ export default function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) 
         setError('');
         setLoading(true);
 
+        import { getApiBaseUrl } from '@/lib/api-config';
+
         const endpoint = isRegister ? '/api/auth/register' : '/api/auth/login';
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || ''; // Use relative path if on same domain, or env var
+        const baseUrl = getApiBaseUrl();
 
         try {
             const res = await fetch(`${baseUrl}${endpoint}`, {

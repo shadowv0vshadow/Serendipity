@@ -26,8 +26,10 @@ export default function AlbumCard({ album }: { album: Album }) {
         const newState = !isLiked;
         setIsLiked(newState);
 
+        import { getApiBaseUrl } from '@/lib/api-config';
+
         try {
-            const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
+            const baseUrl = getApiBaseUrl();
             await fetch(`${baseUrl}/api/likes`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

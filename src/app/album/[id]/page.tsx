@@ -7,9 +7,11 @@ import { Album } from '@/types';
 import AlbumDetailClient from '@/components/AlbumDetailClient';
 
 
+import { getApiBaseUrl } from '@/lib/api-config';
+
 async function getAlbum(id: string) {
     // In Vercel, use absolute URL for SSR
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'development' ? 'http://127.0.0.1:8000' : (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : ''));
+    const baseUrl = getApiBaseUrl();
     const res = await fetch(`${baseUrl}/api/albums/${id}`, { cache: 'no-store' });
     if (!res.ok) {
         if (res.status === 404) return null;
