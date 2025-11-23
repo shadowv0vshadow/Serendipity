@@ -598,5 +598,7 @@ async def get_album(album_id: int, user_id: Optional[int] = None):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# Export handler for Vercel
-handler = app
+
+# Export handler for Vercel using Mangum ASGI adapter
+from mangum import Mangum
+handler = Mangum(app)
