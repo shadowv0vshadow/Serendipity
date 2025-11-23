@@ -14,10 +14,33 @@ from datetime import datetime, timedelta
 
 app = FastAPI(title="slowdive API")
 
+# Test endpoint to verify the function is working
+@app.get("/")
+@app.get("/api")
+async def root():
+    return {"message": "FastAPI is working", "status": "ok"}
+
 # Enable CORS for Next.js frontend with credentials support
+# Get allowed origins from environment or use defaults
+allowed_origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://0.0.0.0:3000",
+]
+
+# Add Vercel deployment URL if available
+vercel_url = os.environ.get("VERCEL_URL")
+if vercel_url:
+    allowed_origins.append(f"https://{vercel_url}")
+
+# Add custom domain if set
+custom_domain = os.environ.get("NEXT_PUBLIC_API_URL")
+if custom_domain and custom_domain not in allowed_origins:
+    allowed_origins.append(custom_domain)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://0.0.0.0:3000", "https://serendipity-iota.vercel.app"],
+    allow_origins=["*"],
     allow_credentials=True,  # Important for cookies
     allow_methods=["*"],
     allow_headers=["*"],
@@ -594,6 +617,8 @@ async def get_album(album_id: int, user_id: Optional[int] = None):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# Export app for Vercel (no adapter needed - Vercel handles ASGI natively)
-# The app instance is automatically detected by Vercel
+# Export handler for Vercel using Mangum adapter
+# Mangum converts ASGI app to AWS Lambda/API Gateway format (compatible with Vercel)
+from mangum import Mangum
 
+handler = Mangum(app, lifespan="off")
