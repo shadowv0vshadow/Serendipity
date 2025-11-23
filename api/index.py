@@ -1,11 +1,7 @@
 import sys
 import os
 
-print("DEBUG: Loading api/index.py...")
-sys.stdout.flush()
-
 from fastapi import FastAPI, HTTPException, Header, Response, Cookie
-from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 import sqlite3
 import random
@@ -62,9 +58,8 @@ class LikeRequest(BaseModel):
     album_id: int
 
 def get_db_path() -> str:
-    # Database is located in the same directory as this file (python_api/rym.db)
+    # Database is located in the same directory as this file (api/rym.db)
     path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "rym.db")
-    print(f"DEBUG: DB path: {path}")
     return path
 
 def get_db_connection():
@@ -599,6 +594,6 @@ async def get_album(album_id: int, user_id: Optional[int] = None):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# Export handler for Vercel using Mangum ASGI adapter
-from mangum import Mangum
-handler = Mangum(app)
+# Export app for Vercel (no adapter needed - Vercel handles ASGI natively)
+# The app instance is automatically detected by Vercel
+

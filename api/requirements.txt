@@ -3,4 +3,3 @@ pydantic
 bcrypt
 uvicorn
 aiofiles
-mangum
