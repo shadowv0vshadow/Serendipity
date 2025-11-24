@@ -5,5 +5,6 @@ export const getApiBaseUrl = () => {
     if (process.env.NODE_ENV === 'development') {
         return 'http://localhost:8000';
     }
-    return '';
+    // Fallback to production API URL
+    return 'https://api-gamma-lyart.vercel.app';
 };
