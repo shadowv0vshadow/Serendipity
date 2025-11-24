@@ -12,6 +12,19 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async rewrites() {
+    // Only proxy in production, not in development
+    if (process.env.NODE_ENV === 'development') {
+      return [];
+    }
+
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'https://api-gamma-lyart.vercel.app/api/:path*',
+      },
+    ];
+  },
 };
 
 export default nextConfig;
