@@ -285,9 +285,9 @@ async def register(user: UserRegister, response: Response):
             key="session_token",
             value=session_token,
             httponly=True,
-            secure=is_production,  # Require HTTPS in production
+            secure=True,  # Always True for cross-domain cookies
             max_age=30 * 24 * 60 * 60,  # 30 days
-            samesite="lax"
+            samesite="none"  # Allow cross-domain cookies
         )
         
         return {"id": user_id, "username": user.username}
@@ -326,9 +326,9 @@ async def login(user: UserLogin, response: Response):
         key="session_token",
         value=session_token,
         httponly=True,
-        secure=is_production,  # Require HTTPS in production
+        secure=True,  # Always True for cross-domain cookies
         max_age=30 * 24 * 60 * 60,  # 30 days
-        samesite="lax"
+        samesite="none"  # Allow cross-domain cookies
     )
     
     return {"id": user_record['id'], "username": user_record['username']}
