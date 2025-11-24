@@ -3,9 +3,7 @@
         {
             "src": "index.py",
             "use": "@vercel/python",
-            "config": {
-                "includeFiles": "rym.db"
-            }
+            "config": {}
         }
     ],
     "routes": [

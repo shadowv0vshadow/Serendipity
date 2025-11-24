@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import AlbumCard from '@/components/AlbumCard';
+import CollectionManager from '@/components/CollectionManager';
 import { Album } from '@/types';
 import { getApiBaseUrl } from '@/lib/api-config';
 
@@ -23,8 +24,6 @@ export default function ProfilePage() {
         const userData = JSON.parse(userStr);
         setUser(userData);
 
-
-
         // Fetch liked albums
         const fetchLikedAlbums = async () => {
             try {
@@ -36,7 +35,12 @@ export default function ProfilePage() {
                 }
 
                 const data = await res.json();
-                setLikedAlbums(data);
+                // Add is_liked property since these are all liked albums
+                const albumsWithLikedStatus = data.map((album: Album) => ({
+                    ...album,
+                    is_liked: true
+                }));
+                setLikedAlbums(albumsWithLikedStatus);
             } catch (error) {
                 console.error('Error fetching liked albums:', error);
             } finally {
@@ -70,6 +74,18 @@ export default function ProfilePage() {
                     </p>
                 </div>
 
+                {/* Collection Section */}
+                <div className="mb-16">
+                    <CollectionManager />
+                </div>
+
+                <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                    <svg className="w-6 h-6 text-red-500" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                    </svg>
+                    Liked Albums
+                </h2>
+
                 {/* Liked Albums Grid */}
                 {likedAlbums.length > 0 ? (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
@@ -78,7 +94,7 @@ export default function ProfilePage() {
                         ))}
                     </div>
                 ) : (
-                    <div className="text-center py-20">
+                    <div className="text-center py-20 bg-white/5 rounded-xl border border-white/10">
                         <svg
                             className="w-24 h-24 mx-auto mb-6 text-gray-700"
                             fill="none"

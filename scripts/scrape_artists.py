@@ -124,8 +124,8 @@ def main():
             # Update DB
             c.execute("""
                 UPDATE artists 
-                SET bio = ?, image_path = ? 
-                WHERE id = ?
+                SET bio = %s, image_path = %s 
+                WHERE id = %s
             """, (info.get('bio'), info.get('image_url'), aid))
             conn.commit()
             print(f"Updated {name}")

@@ -42,23 +42,43 @@ def get_html(url):
         return None
 
 import json
-import database
+import psycopg2
+import sys
+
+def get_db_connection():
+    # Load from .env.local or use hardcoded
+    env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env.local")
+    env_vars = {}
+    if os.path.exists(env_path):
+        with open(env_path, 'r') as f:
+            for line in f:
+                if '=' in line and not line.startswith('#'):
+                    key, val = line.strip().split('=', 1)
+                    env_vars[key] = val
+    
+    host = os.environ.get("POSTGRES_HOST", env_vars.get("POSTGRES_HOST", "***REMOVED***"))
+    user = os.environ.get("POSTGRES_USER", env_vars.get("POSTGRES_USER", "myuser"))
+    password = os.environ.get("POSTGRES_PASSWORD", env_vars.get("POSTGRES_PASSWORD", ""))
+    dbname = os.environ.get("POSTGRES_DATABASE", env_vars.get("POSTGRES_DATABASE", "rym_db"))
+    port = os.environ.get("POSTGRES_PORT", env_vars.get("POSTGRES_PORT", "5432"))
+    
+    return psycopg2.connect(host=host, user=user, password=password, dbname=dbname, port=port)
 
 # ... (keep existing imports and helper functions)
 
 def save_to_db(items):
-    conn = database.get_db_connection()
+    conn = get_db_connection()
     c = conn.cursor()
     
     for item in items:
         try:
             # 1. Insert/Get Artist
-            c.execute('INSERT OR IGNORE INTO artists (name) VALUES (?)', (item['Artist'],))
-            c.execute('SELECT id FROM artists WHERE name = ?', (item['Artist'],))
+            c.execute('INSERT INTO artists (name) VALUES (%s) ON CONFLICT (name) DO NOTHING', (item['Artist'],))
+            c.execute('SELECT id FROM artists WHERE name = %s', (item['Artist'],))
             artist_id = c.fetchone()[0]
             
             # 2. Check if Album exists
-            c.execute('SELECT id FROM albums WHERE title = ? AND artist_id = ?', (item['Album'], artist_id))
+            c.execute('SELECT id FROM albums WHERE title = %s AND artist_id = %s', (item['Album'], artist_id))
             existing_album = c.fetchone()
             
             if existing_album:
@@ -66,8 +86,8 @@ def save_to_db(items):
                 # Update existing album
                 c.execute('''
                     UPDATE albums 
-                    SET rank = ?, release_date = ?, rating = ?, ratings_count = ?, image_path = ?, spotify_link = ?, youtube_link = ?, apple_music_link = ?
-                    WHERE id = ?
+                    SET rank = %s, release_date = %s, rating = %s, ratings_count = %s, image_path = %s, spotify_link = %s, youtube_link = %s, apple_music_link = %s
+                    WHERE id = %s
                 ''', (
                     item['Rank'], item['Date'], item['Rating'], item['Ratings Count'], 
                     item.get('Local Image'), item.get('Spotify'), item.get('YouTube'), item.get('Apple Music'),
@@ -77,17 +97,18 @@ def save_to_db(items):
                 # Insert new album
                 c.execute('''
                     INSERT INTO albums (title, artist_id, rank, release_date, rating, ratings_count, image_path, spotify_link, youtube_link, apple_music_link)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    RETURNING id
                 ''', (
                     item['Album'], artist_id, item['Rank'], item['Date'], item['Rating'], 
                     item['Ratings Count'], item.get('Local Image'), 
                     item.get('Spotify'), item.get('YouTube'), item.get('Apple Music')
                 ))
-                album_id = c.lastrowid
+                album_id = c.fetchone()[0]
             
             # 3. Insert Genres and Link to Album
             # Clear existing genres for this album to avoid stale data
-            c.execute('DELETE FROM album_genres WHERE album_id = ?', (album_id,))
+            c.execute('DELETE FROM album_genres WHERE album_id = %s', (album_id,))
             
             # Helper to insert genres
             def insert_genres(genre_list, is_primary):
@@ -95,11 +116,11 @@ def save_to_db(items):
                     genre_name = genre_name.strip()
                     if not genre_name: continue
                     
-                    c.execute('INSERT OR IGNORE INTO genres (name) VALUES (?)', (genre_name,))
-                    c.execute('SELECT id FROM genres WHERE name = ?', (genre_name,))
+                    c.execute('INSERT INTO genres (name) VALUES (%s) ON CONFLICT (name) DO NOTHING', (genre_name,))
+                    c.execute('SELECT id FROM genres WHERE name = %s', (genre_name,))
                     genre_id = c.fetchone()[0]
                     
-                    c.execute('INSERT OR IGNORE INTO album_genres (album_id, genre_id, is_primary) VALUES (?, ?, ?)', 
+                    c.execute('INSERT INTO album_genres (album_id, genre_id, is_primary) VALUES (%s, %s, %s) ON CONFLICT DO NOTHING', 
                               (album_id, genre_id, is_primary))
 
             insert_genres(item['Primary Genres'], True)
@@ -107,6 +128,8 @@ def save_to_db(items):
                     
         except Exception as e:
             print(f"Error saving item {item['Album']} to DB: {e}")
+            conn.rollback()
+            continue
             
     conn.commit()
     conn.close()

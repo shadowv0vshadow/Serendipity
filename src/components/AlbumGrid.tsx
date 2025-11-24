@@ -58,7 +58,12 @@ export default function AlbumGrid({ allAlbums, genre, disableInfiniteScroll = fa
                 if (newAlbums.length === 0) {
                     setHasMore(false);
                 } else {
-                    setAlbums(prev => [...prev, ...newAlbums]);
+                    // Filter out duplicates based on id
+                    setAlbums(prev => {
+                        const existingIds = new Set(prev.map(a => a.id));
+                        const filtered = newAlbums.filter(a => !existingIds.has(a.id));
+                        return [...prev, ...filtered];
+                    });
                     setOffset(prev => prev + newAlbums.length);
                 }
             } else {

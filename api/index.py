@@ -1,19 +1,108 @@
 import sys
 import os
 
-from fastapi import FastAPI, HTTPException, Header, Response, Cookie
+from fastapi import FastAPI, HTTPException, Header, Response, Cookie, Body
 from fastapi.middleware.cors import CORSMiddleware
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import random
 import secrets
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from pydantic import BaseModel
 import bcrypt
 from collections import Counter
 from datetime import datetime, timedelta
+from api.discogs import DiscogsClient
 
 app = FastAPI(title="slowdive API")
+discogs_client = DiscogsClient()
+
+# ... (keep existing endpoints)
+
+class CollectionItem(BaseModel):
+    discogs_id: int
+    master_id: Optional[int] = None
+    title: str
+    artist: str
+    format: str
+    label: Optional[str] = None
+    year: Optional[str] = None
+    thumb_url: Optional[str] = None
+    notes: Optional[str] = None
+
+@app.get("/api/discogs/search")
+async def search_discogs(q: str, type: str = "release"):
+    return await discogs_client.search(q, type)
+
+@app.get("/api/discogs/releases/{release_id}")
+async def get_discogs_release(release_id: int):
+    return await discogs_client.get_release(release_id)
+
+@app.get("/api/discogs/masters/{master_id}/versions")
+async def get_discogs_master_versions(master_id: int, page: int = 1, per_page: int = 50):
+    return await discogs_client.get_master_versions(master_id, page, per_page)
+
+@app.get("/api/collection")
+def get_collection(session_token: Optional[str] = Cookie(None)):
+    user_id = get_user_from_session(session_token)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+        
+    with get_db_connection() as conn:
+        c = conn.cursor(cursor_factory=RealDictCursor)
+        c.execute("SELECT * FROM collection_items WHERE user_id = %s ORDER BY added_at DESC", (user_id,))
+        items = c.fetchall()
+    return items
+
+@app.post("/api/collection")
+def add_to_collection(item: CollectionItem, session_token: Optional[str] = Cookie(None)):
+    user_id = get_user_from_session(session_token)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+        
+    try:
+        with get_write_db_connection() as conn:
+            c = conn.cursor()
+            
+            # Check if item already exists in user's collection
+            c.execute("""
+                SELECT id FROM collection_items 
+                WHERE user_id = %s AND discogs_id = %s
+            """, (user_id, item.discogs_id))
+            existing = c.fetchone()
+            
+            if existing:
+                raise HTTPException(status_code=400, detail="This item is already in your collection")
+            
+            c.execute("""
+                INSERT INTO collection_items 
+                (user_id, discogs_id, master_id, title, artist, format, label, year, thumb_url, notes)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                RETURNING id
+            """, (
+                user_id, item.discogs_id, item.master_id, item.title, item.artist, 
+                item.format, item.label, item.year, item.thumb_url, item.notes
+            ))
+            conn.commit()
+            new_id = c.fetchone()[0]
+            return {"id": new_id, "status": "added"}
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/api/collection/{item_id}")
+def remove_from_collection(item_id: int, session_token: Optional[str] = Cookie(None)):
+    user_id = get_user_from_session(session_token)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+        
+    with get_write_db_connection() as conn:
+        c = conn.cursor()
+        c.execute("DELETE FROM collection_items WHERE id = %s AND user_id = %s", (item_id, user_id))
+        conn.commit()
+    return {"status": "removed"}
+
 
 # Test endpoint to verify the function is working
 @app.get("/")
@@ -92,16 +181,62 @@ DB_NAME = os.environ.get("POSTGRES_DATABASE") or os.environ.get("POSTGRES_DB", "
 DB_PASSWORD = os.environ.get("POSTGRES_PASSWORD", "")  # Must be set in environment
 DB_PORT = os.environ.get("POSTGRES_PORT", "5432")
 
+from psycopg2 import pool
+
+# Global connection pool
+db_pool = None
+
+def init_db_pool():
+    global db_pool
+    if db_pool is None:
+        try:
+            db_pool = pool.SimpleConnectionPool(
+                1,  # minconn
+                20, # maxconn
+                host=DB_HOST,
+                user=DB_USER,
+                password=DB_PASSWORD,
+                dbname=DB_NAME,
+                port=DB_PORT
+            )
+            print("Database connection pool created")
+        except Exception as e:
+            print(f"Error creating connection pool: {e}")
+            raise e
+
+class PooledConnection:
+    def __init__(self, pool, conn):
+        self.pool = pool
+        self.conn = conn
+        
+    def close(self):
+        if self.pool and self.conn:
+            self.pool.putconn(self.conn)
+            self.conn = None
+            
+    def commit(self):
+        self.conn.commit()
+        
+    def rollback(self):
+        self.conn.rollback()
+        
+    def cursor(self, *args, **kwargs):
+        return self.conn.cursor(*args, **kwargs)
+        
+    def __enter__(self):
+        return self
+        
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+
 def get_db_connection():
+    global db_pool
+    if db_pool is None:
+        init_db_pool()
+    
     try:
-        conn = psycopg2.connect(
-            host=DB_HOST,
-            user=DB_USER,
-            password=DB_PASSWORD,
-            dbname=DB_NAME,
-            port=DB_PORT
-        )
-        return conn
+        conn = db_pool.getconn()
+        return PooledConnection(db_pool, conn)
     except Exception as e:
         print(f"ERROR: PostgreSQL connection failed: {e}")
         raise HTTPException(status_code=500, detail=f"Database connection failed: {str(e)}")
@@ -112,98 +247,97 @@ def get_write_db_connection():
 # Initialize DB
 def init_db():
     try:
-        conn = get_db_connection()
-        c = conn.cursor()
-        
-        # Check if users table exists
-        c.execute("SELECT to_regclass('public.users')")
-        if c.fetchone()[0] is None:
-            print("DEBUG: Initializing database schema...")
-            # Create tables
-            c.execute("""
-                CREATE TABLE IF NOT EXISTS artists (
-                    id SERIAL PRIMARY KEY,
-                    name TEXT UNIQUE NOT NULL,
-                    slug TEXT,
-                    bio TEXT,
-                    image_path TEXT,
-                    location TEXT
-                );
-            """)
-            c.execute("""
-                CREATE TABLE IF NOT EXISTS genres (
-                    id SERIAL PRIMARY KEY,
-                    name TEXT UNIQUE NOT NULL
-                );
-            """)
-            c.execute("""
-                CREATE TABLE IF NOT EXISTS albums (
-                    id SERIAL PRIMARY KEY,
-                    title TEXT NOT NULL,
-                    artist_id INTEGER,
-                    rank INTEGER,
-                    release_date TEXT,
-                    rating REAL,
-                    ratings_count TEXT,
-                    image_path TEXT,
-                    spotify_link TEXT,
-                    youtube_link TEXT,
-                    apple_music_link TEXT,
-                    FOREIGN KEY (artist_id) REFERENCES artists (id)
-                );
-            """)
-            c.execute("""
-                CREATE TABLE IF NOT EXISTS album_genres (
-                    album_id INTEGER,
-                    genre_id INTEGER,
-                    is_primary BOOLEAN DEFAULT FALSE,
-                    PRIMARY KEY (album_id, genre_id),
-                    FOREIGN KEY (album_id) REFERENCES albums (id),
-                    FOREIGN KEY (genre_id) REFERENCES genres (id)
-                );
-            """)
-            c.execute("""
-                CREATE TABLE IF NOT EXISTS users (
-                    id SERIAL PRIMARY KEY,
-                    username TEXT UNIQUE NOT NULL,
-                    password_hash TEXT NOT NULL,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                );
-            """)
-            c.execute("""
-                CREATE TABLE IF NOT EXISTS likes (
-                    user_id INTEGER,
-                    album_id INTEGER,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    PRIMARY KEY (user_id, album_id),
-                    FOREIGN KEY (user_id) REFERENCES users (id),
-                    FOREIGN KEY (album_id) REFERENCES albums (id)
-                );
-            """)
-            c.execute("""
-                CREATE TABLE IF NOT EXISTS sessions (
-                    token TEXT PRIMARY KEY,
-                    user_id INTEGER NOT NULL,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    expires_at TIMESTAMP NOT NULL,
-                    FOREIGN KEY (user_id) REFERENCES users (id)
-                );
-            """)
-            conn.commit()
-            print("DEBUG: Database schema initialized.")
+        with get_db_connection() as conn:
+            c = conn.cursor()
             
-        # Clean biography data: remove "Biography" prefix if present
-        c.execute("""
-            UPDATE artists 
-            SET bio = TRIM(SUBSTRING(bio FROM 10))
-            WHERE bio LIKE 'Biography%'
-        """)
-        cleaned_count = c.rowcount
-        if cleaned_count > 0:
-            conn.commit()
-            print(f"DEBUG: Cleaned {cleaned_count} artist biographies.")
-            
-        conn.close()
+            # Check if users table exists
+            c.execute("SELECT to_regclass('public.users')")
+            if c.fetchone()[0] is None:
+                print("DEBUG: Initializing database schema...")
+                # Create tables
+                c.execute("""
+                    CREATE TABLE IF NOT EXISTS artists (
+                        id SERIAL PRIMARY KEY,
+                        name TEXT UNIQUE NOT NULL,
+                        slug TEXT,
+                        bio TEXT,
+                        image_path TEXT,
+                        location TEXT
+                    );
+                """)
+                c.execute("""
+                    CREATE TABLE IF NOT EXISTS genres (
+                        id SERIAL PRIMARY KEY,
+                        name TEXT UNIQUE NOT NULL
+                    );
+                """)
+                c.execute("""
+                    CREATE TABLE IF NOT EXISTS albums (
+                        id SERIAL PRIMARY KEY,
+                        title TEXT NOT NULL,
+                        artist_id INTEGER,
+                        rank INTEGER,
+                        release_date TEXT,
+                        rating REAL,
+                        ratings_count TEXT,
+                        image_path TEXT,
+                        spotify_link TEXT,
+                        youtube_link TEXT,
+                        apple_music_link TEXT,
+                        FOREIGN KEY (artist_id) REFERENCES artists (id)
+                    );
+                """)
+                c.execute("""
+                    CREATE TABLE IF NOT EXISTS album_genres (
+                        album_id INTEGER,
+                        genre_id INTEGER,
+                        is_primary BOOLEAN DEFAULT FALSE,
+                        PRIMARY KEY (album_id, genre_id),
+                        FOREIGN KEY (album_id) REFERENCES albums (id),
+                        FOREIGN KEY (genre_id) REFERENCES genres (id)
+                    );
+                """)
+                c.execute("""
+                    CREATE TABLE IF NOT EXISTS users (
+                        id SERIAL PRIMARY KEY,
+                        username TEXT UNIQUE NOT NULL,
+                        password_hash TEXT NOT NULL,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    );
+                """)
+                c.execute("""
+                    CREATE TABLE IF NOT EXISTS likes (
+                        user_id INTEGER,
+                        album_id INTEGER,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        PRIMARY KEY (user_id, album_id),
+                        FOREIGN KEY (user_id) REFERENCES users (id),
+                        FOREIGN KEY (album_id) REFERENCES albums (id)
+                    );
+                """)
+                c.execute("""
+                    CREATE TABLE IF NOT EXISTS sessions (
+                        token TEXT PRIMARY KEY,
+                        user_id INTEGER NOT NULL,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        expires_at TIMESTAMP NOT NULL,
+                        FOREIGN KEY (user_id) REFERENCES users (id)
+                    );
+                """)
+                conn.commit()
+                print("DEBUG: Database schema initialized.")
+                
+            # Clean biography data: remove "Biography" prefix if present
+            c.execute("""
+                UPDATE artists 
+                SET bio = TRIM(SUBSTRING(bio FROM 10))
+                WHERE bio LIKE 'Biography%'
+            """)
+            cleaned_count = c.rowcount
+            if cleaned_count > 0:
+                conn.commit()
+                print(f"DEBUG: Cleaned {cleaned_count} artist biographies.")
+                
     except Exception as e:
         print(f"ERROR: Failed to init DB: {e}")
 
@@ -216,14 +350,13 @@ def create_session(user_id: int) -> str:
     token = secrets.token_urlsafe(32)
     expires_at = datetime.now() + timedelta(days=30)
     
-    conn = get_write_db_connection()
-    c = conn.cursor()
-    c.execute(
-        "INSERT INTO sessions (token, user_id, expires_at) VALUES (%s, %s, %s)",
-        (token, user_id, expires_at.isoformat())
-    )
-    conn.commit()
-    conn.close()
+    with get_write_db_connection() as conn:
+        c = conn.cursor()
+        c.execute(
+            "INSERT INTO sessions (token, user_id, expires_at) VALUES (%s, %s, %s)",
+            (token, user_id, expires_at.isoformat())
+        )
+        conn.commit()
     return token
 
 def get_user_from_session(session_token: Optional[str]) -> Optional[int]:
@@ -231,14 +364,14 @@ def get_user_from_session(session_token: Optional[str]) -> Optional[int]:
     if not session_token:
         return None
     
-    conn = get_db_connection()
-    c = conn.cursor(cursor_factory=RealDictCursor)
-    c.execute(
-        "SELECT user_id, expires_at FROM sessions WHERE token = %s",
-        (session_token,)
-    )
-    session = c.fetchone()
-    conn.close()
+    session = None
+    with get_db_connection() as conn:
+        c = conn.cursor(cursor_factory=RealDictCursor)
+        c.execute(
+            "SELECT user_id, expires_at FROM sessions WHERE token = %s",
+            (session_token,)
+        )
+        session = c.fetchone()
     
     if not session:
         return None
@@ -250,62 +383,58 @@ def get_user_from_session(session_token: Optional[str]) -> Optional[int]:
         
     if datetime.now() > expires_at:
         # Clean up expired session
-        conn = get_write_db_connection()
-        c = conn.cursor()
-        c.execute("DELETE FROM sessions WHERE token = %s", (session_token,))
-        conn.commit()
-        conn.close()
+        with get_write_db_connection() as conn:
+            c = conn.cursor()
+            c.execute("DELETE FROM sessions WHERE token = %s", (session_token,))
+            conn.commit()
         return None
     
     return session['user_id']
 
 @app.post("/api/auth/register")
-async def register(user: UserRegister, response: Response):
-    conn = None # Initialize conn to None for finally block
+def register(user: UserRegister, response: Response):
     try:
-        conn = get_write_db_connection()
-        c = conn.cursor()
-        
-        # Hash password with bcrypt
-        password_bytes = user.password.encode('utf-8')
-        salt = bcrypt.gensalt()
-        hashed_password = bcrypt.hashpw(password_bytes, salt).decode('utf-8')
-        
-        c.execute("INSERT INTO users (username, password_hash) VALUES (%s, %s) RETURNING id", (user.username, hashed_password))
-        user_id = c.fetchone()[0]
-        conn.commit()
-        conn.close()
-        
-        # Create session and set cookie
-        session_token = create_session(user_id)
-        
-        # Detect if running in production (HTTPS)
-        is_production = os.environ.get("VERCEL_ENV") == "production" or os.environ.get("NODE_ENV") == "production"
-        
-        response.set_cookie(
-            key="session_token",
-            value=session_token,
-            httponly=True,
-            secure=True,  # Always True for cross-domain cookies
-            max_age=30 * 24 * 60 * 60,  # 30 days
-            samesite="none"  # Allow cross-domain cookies
-        )
-        
-        return {"id": user_id, "username": user.username}
+        with get_write_db_connection() as conn:
+            c = conn.cursor()
+            
+            # Hash password with bcrypt
+            password_bytes = user.password.encode('utf-8')
+            salt = bcrypt.gensalt()
+            hashed_password = bcrypt.hashpw(password_bytes, salt).decode('utf-8')
+            
+            c.execute("INSERT INTO users (username, password_hash) VALUES (%s, %s) RETURNING id", (user.username, hashed_password))
+            user_id = c.fetchone()[0]
+            conn.commit()
+            
+            # Create session and set cookie
+            # Note: create_session uses its own connection, which is fine with pooling
+            session_token = create_session(user_id)
+            
+            # Detect if running in production (HTTPS)
+            is_production = os.environ.get("VERCEL_ENV") == "production" or os.environ.get("NODE_ENV") == "production"
+            
+            response.set_cookie(
+                key="session_token",
+                value=session_token,
+                httponly=True,
+                secure=True,  # Always True for cross-domain cookies
+                max_age=30 * 24 * 60 * 60,  # 30 days
+                samesite="none"  # Allow cross-domain cookies
+            )
+            
+            return {"id": user_id, "username": user.username}
     except psycopg2.errors.UniqueViolation:
-        if conn: conn.rollback() # Important in Postgres
         raise HTTPException(status_code=400, detail="Username already exists")
     except Exception as e:
-        if conn: conn.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/auth/login")
-async def login(user: UserLogin, response: Response):
-    conn = get_db_connection()
-    c = conn.cursor(cursor_factory=RealDictCursor)
-    c.execute("SELECT * FROM users WHERE username = %s", (user.username,))
-    user_record = c.fetchone()
-    conn.close()
+def login(user: UserLogin, response: Response):
+    user_record = None
+    with get_db_connection() as conn:
+        c = conn.cursor(cursor_factory=RealDictCursor)
+        c.execute("SELECT * FROM users WHERE username = %s", (user.username,))
+        user_record = c.fetchone()
 
     if not user_record:
         raise HTTPException(status_code=401, detail="Invalid credentials")
@@ -335,23 +464,21 @@ async def login(user: UserLogin, response: Response):
     return {"id": user_record['id'], "username": user_record['username']}
 
 @app.post("/api/auth/logout")
-async def logout(response: Response, session_token: Optional[str] = Cookie(None)):
+def logout(response: Response, session_token: Optional[str] = Cookie(None)):
     """Logout user by deleting session."""
     if session_token:
-        conn = get_write_db_connection()
-        c = conn.cursor()
-        c.execute("DELETE FROM sessions WHERE token = %s", (session_token,))
-        conn.commit()
-        conn.close()
+        with get_write_db_connection() as conn:
+            c = conn.cursor()
+            c.execute("DELETE FROM sessions WHERE token = %s", (session_token,))
+            conn.commit()
     
     # Clear cookie
     response.delete_cookie(key="session_token")
     return {"message": "Logged out successfully"}
 
 @app.post("/api/likes")
-async def toggle_like(like: LikeRequest, session_token: Optional[str] = Cookie(None)):
+def toggle_like(like: LikeRequest, session_token: Optional[str] = Cookie(None)):
     print(f"DEBUG: toggle_like called. Body: {like}, Cookie: {session_token}")
-    conn = None # Initialize conn to None for finally block
     try:
         # Verify user from session
         user_id = get_user_from_session(session_token)
@@ -366,101 +493,97 @@ async def toggle_like(like: LikeRequest, session_token: Optional[str] = Cookie(N
             print(f"DEBUG: ID mismatch. Body: {like.user_id}, Session: {user_id} -> 403")
             raise HTTPException(status_code=403, detail="User ID mismatch")
 
-        conn = get_write_db_connection()
-        c = conn.cursor(cursor_factory=RealDictCursor)
-        
-        # Check if already liked
-        c.execute("SELECT * FROM likes WHERE user_id = %s AND album_id = %s", (user_id, like.album_id))
-        existing = c.fetchone()
-        print(f"DEBUG: Existing like found? {existing is not None}")
-        
-        if existing:
-            c.execute("DELETE FROM likes WHERE user_id = %s AND album_id = %s", (user_id, like.album_id))
-            status = "unliked"
-        else:
-            c.execute("INSERT INTO likes (user_id, album_id) VALUES (%s, %s)", (user_id, like.album_id))
-            status = "liked"
+        with get_write_db_connection() as conn:
+            c = conn.cursor(cursor_factory=RealDictCursor)
             
-        conn.commit()
-        conn.close()
-        print(f"DEBUG: Success. New status: {status}")
-        return {"status": status}
+            # Check if already liked
+            c.execute("SELECT * FROM likes WHERE user_id = %s AND album_id = %s", (user_id, like.album_id))
+            existing = c.fetchone()
+            print(f"DEBUG: Existing like found? {existing is not None}")
+            
+            if existing:
+                c.execute("DELETE FROM likes WHERE user_id = %s AND album_id = %s", (user_id, like.album_id))
+                status = "unliked"
+            else:
+                c.execute("INSERT INTO likes (user_id, album_id) VALUES (%s, %s)", (user_id, like.album_id))
+                status = "liked"
+                
+            conn.commit()
+            print(f"DEBUG: Success. New status: {status}")
+            return {"status": status}
     except HTTPException as he:
         raise he
     except Exception as e:
         print(f"DEBUG: Exception: {e}")
-        if conn: conn.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/users/{user_id}/likes", response_model=List[Album])
-async def get_user_likes(user_id: int):
+def get_user_likes(user_id: int):
     """Get all albums liked by a specific user"""
     try:
-        conn = get_db_connection()
-        c = conn.cursor(cursor_factory=RealDictCursor)
-        
-        # Get liked album IDs
-        c.execute("SELECT album_id FROM likes WHERE user_id = %s", (user_id,))
-        liked_ids = c.fetchall()
-        liked_album_ids = {row['album_id'] for row in liked_ids}
-        
-        if not liked_album_ids:
-            conn.close()
-            return []
-        
-        # Get album details for liked albums
-        # Postgres requires explicit casting or safe handling for IN clause
-        # We can use tuple(liked_album_ids) directly with %s if we construct the string correctly
-        placeholders = ','.join(['%s'] * len(liked_album_ids))
-        
-        # Note: We need to pass the tuple of IDs twice because we use it in two queries? No, just once here.
-        
-        c.execute(f'''
-            SELECT a.*, ar.name as artist_name 
-            FROM albums a 
-            JOIN artists ar ON a.artist_id = ar.id
-            WHERE a.id IN ({placeholders})
-            ORDER BY a.rank ASC
-        ''', tuple(liked_album_ids))
-        albums_data = c.fetchall()
-        
-        # Get all genres for these albums
-        c.execute(f'''
-            SELECT ag.album_id, g.name 
-            FROM genres g 
-            JOIN album_genres ag ON g.id = ag.genre_id
-            WHERE ag.album_id IN ({placeholders})
-        ''', tuple(liked_album_ids))
-        all_genres = c.fetchall()
-        
-        album_genres_map = {}
-        for row in all_genres:
-            if row['album_id'] not in album_genres_map:
-                album_genres_map[row['album_id']] = []
-            album_genres_map[row['album_id']].append(row['name'])
-        
-        results = []
-        for album in albums_data:
-            album_dict = dict(album)
-            aid = album['id']
+        with get_db_connection() as conn:
+            c = conn.cursor(cursor_factory=RealDictCursor)
             
-            album_dict['genres'] = album_genres_map.get(aid, [])
-            album_dict['is_liked'] = True  # All albums in this list are liked
+            # Get liked album IDs
+            c.execute("SELECT album_id FROM likes WHERE user_id = %s", (user_id,))
+            liked_ids = c.fetchall()
+            liked_album_ids = {row['album_id'] for row in liked_ids}
             
-            img_path = album_dict['image_path']
-            if img_path and img_path.startswith('covers/'):
-                img_path = img_path.replace('covers/', '')
-            album_dict['image_path'] = f"/covers/{img_path}" if img_path else None
+            if not liked_album_ids:
+                return []
             
-            results.append(album_dict)
+            # Get album details for liked albums
+            # Postgres requires explicit casting or safe handling for IN clause
+            # We can use tuple(liked_album_ids) directly with %s if we construct the string correctly
+            placeholders = ','.join(['%s'] * len(liked_album_ids))
             
-        conn.close()
-        return results
+            # Note: We need to pass the tuple of IDs twice because we use it in two queries? No, just once here.
+            
+            c.execute(f'''
+                SELECT a.*, ar.name as artist_name 
+                FROM albums a 
+                JOIN artists ar ON a.artist_id = ar.id
+                WHERE a.id IN ({placeholders})
+                ORDER BY a.rank ASC
+            ''', tuple(liked_album_ids))
+            albums_data = c.fetchall()
+            
+            # Get all genres for these albums
+            c.execute(f'''
+                SELECT ag.album_id, g.name 
+                FROM genres g 
+                JOIN album_genres ag ON g.id = ag.genre_id
+                WHERE ag.album_id IN ({placeholders})
+            ''', tuple(liked_album_ids))
+            all_genres = c.fetchall()
+            
+            album_genres_map = {}
+            for row in all_genres:
+                if row['album_id'] not in album_genres_map:
+                    album_genres_map[row['album_id']] = []
+                album_genres_map[row['album_id']].append(row['name'])
+            
+            results = []
+            for album in albums_data:
+                album_dict = dict(album)
+                aid = album['id']
+                
+                album_dict['genres'] = album_genres_map.get(aid, [])
+                album_dict['is_liked'] = True  # All albums in this list are liked
+                
+                img_path = album_dict['image_path']
+                if img_path and img_path.startswith('covers/'):
+                    img_path = img_path.replace('covers/', '')
+                album_dict['image_path'] = f"/covers/{img_path}" if img_path else None
+                
+                results.append(album_dict)
+                
+            return results
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/albums")
-async def get_albums(
+def get_albums(
     session_token: Optional[str] = Cookie(None),
     limit: int = 40,
     offset: int = 0,
@@ -481,282 +604,280 @@ async def get_albums(
         daily_seed = hash(f"{user_id or 'anonymous'}_{today}") % (2**31)
         rng = random.Random(daily_seed)
         
-        conn = get_db_connection()
-        c = conn.cursor(cursor_factory=RealDictCursor)
-        
-        # Get total count and albums data
-        if genre:
-            # Filter by genre
-            c.execute('''
-                SELECT COUNT(DISTINCT a.id) as count 
-                FROM albums a
-                JOIN album_genres ag ON a.id = ag.album_id
-                JOIN genres g ON ag.genre_id = g.id
-                WHERE g.name = %s
-            ''', (genre,))
-            total_count = c.fetchone()['count']
+        with get_db_connection() as conn:
+            c = conn.cursor(cursor_factory=RealDictCursor)
             
-            c.execute('''
-                SELECT DISTINCT a.*, ar.name as artist_name 
-                FROM albums a 
-                JOIN artists ar ON a.artist_id = ar.id
-                JOIN album_genres ag ON a.id = ag.album_id
-                JOIN genres g ON ag.genre_id = g.id
-                WHERE g.name = %s
-            ''', (genre,))
-            albums_data = c.fetchall()
-        else:
-            # No filter
-            c.execute('SELECT COUNT(*) as count FROM albums')
-            total_count = c.fetchone()['count']
-            
-            c.execute('''
-                SELECT a.*, ar.name as artist_name 
-                FROM albums a 
-                JOIN artists ar ON a.artist_id = ar.id
-            ''')
-            albums_data = c.fetchall()
-        
-        # Get all genres
-        c.execute('''
-            SELECT ag.album_id, g.name 
-            FROM genres g 
-            JOIN album_genres ag ON g.id = ag.genre_id
-        ''')
-        all_genres = c.fetchall()
-        
-        album_genres_map = {}
-        for row in all_genres:
-            if row['album_id'] not in album_genres_map:
-                album_genres_map[row['album_id']] = []
-            album_genres_map[row['album_id']].append(row['name'])
-
-        # Get user profile data
-        liked_album_ids = set()
-        liked_artist_ids = set()
-        user_genre_counts = Counter()
-        similar_user_likes = set()
-        
-        if user_id:
-            # Get user's likes
-            c.execute("SELECT album_id FROM likes WHERE user_id = %s", (user_id,))
-            likes = c.fetchall()
-            liked_album_ids = {row['album_id'] for row in likes}
-            
-            # Get liked artists
-            if liked_album_ids:
-                placeholders = ','.join(['%s'] * len(liked_album_ids))
-                c.execute(f'''
-                    SELECT DISTINCT artist_id FROM albums WHERE id IN ({placeholders})
-                ''', tuple(liked_album_ids))
-                liked_artists = c.fetchall()
-                liked_artist_ids = {row['artist_id'] for row in liked_artists}
-            
-            # Build genre preference profile
-            for aid in liked_album_ids:
-                if aid in album_genres_map:
-                    for g in album_genres_map[aid]:
-                        user_genre_counts[g] += 1
-            
-            # Collaborative filtering: find similar users
-            if liked_album_ids:
-                # Find users who liked at least 2 of the same albums
-                placeholders = ','.join(['%s'] * len(liked_album_ids))
-                c.execute(f'''
-                    SELECT user_id, COUNT(*) as common_likes
-                    FROM likes
-                    WHERE album_id IN ({placeholders}) AND user_id != %s
-                    GROUP BY user_id
-                    HAVING COUNT(*) >= 2
-                    ORDER BY common_likes DESC
-                    LIMIT 10
-                ''', (*tuple(liked_album_ids), user_id))
-                similar_users = c.fetchall()
+            # Get total count and albums data
+            if genre:
+                # Filter by genre
+                c.execute('''
+                    SELECT COUNT(DISTINCT a.id) as count 
+                    FROM albums a
+                    JOIN album_genres ag ON a.id = ag.album_id
+                    JOIN genres g ON ag.genre_id = g.id
+                    WHERE g.name = %s
+                ''', (genre,))
+                total_count = c.fetchone()['count']
                 
-                # Get what similar users liked
-                if similar_users:
-                    similar_user_ids = [row['user_id'] for row in similar_users]
-                    placeholders = ','.join(['%s'] * len(similar_user_ids))
-                    c.execute(f'''
-                        SELECT DISTINCT album_id FROM likes 
-                        WHERE user_id IN ({placeholders})
-                    ''', tuple(similar_user_ids))
-                    collab_likes = c.fetchall()
-                    similar_user_likes = {row['album_id'] for row in collab_likes}
-
-        # Calculate scores for all albums
-        results = []
-        for album in albums_data:
-            album_dict = dict(album)
-            aid = album['id']
-            
-            album_dict['genres'] = album_genres_map.get(aid, [])
-            album_dict['is_liked'] = aid in liked_album_ids
-            
-            img_path = album_dict['image_path']
-            if img_path and img_path.startswith('covers/'):
-                img_path = img_path.replace('covers/', '')
-            album_dict['image_path'] = f"/covers/{img_path}" if img_path else None
-            
-            # === SCORING ALGORITHM ===
-            
-            # 1. BASE SCORE (30%): Quality and popularity
-            base_score = 0
-            # Rank score (lower rank = better)
-            rank_score = max(0, 1 - (album['rank'] / 10000.0))
-            # Rating score
-            rating_score = (album['rating'] or 3.0) / 5.0 if album['rating'] else 0.6
-            # Popularity score (normalized ratings count)
-            try:
-                ratings_count = int(album['ratings_count'].replace(',', '')) if album['ratings_count'] else 0
-                popularity_score = min(1.0, ratings_count / 50000.0)
-            except:
-                popularity_score = 0
-            
-            base_score = (rank_score * 0.5 + rating_score * 0.3 + popularity_score * 0.2) * 30
-            
-            # 2. PERSONALIZATION SCORE (40%)
-            personalization_score = 0
-            if user_id:
-                # Genre affinity
-                genre_match = 0
-                for g in album_dict['genres']:
-                    if g in user_genre_counts:
-                        genre_match += user_genre_counts[g]
-                personalization_score += min(genre_match * 3, 20)  # Cap at 20
-                
-                # Artist affinity
-                if album['artist_id'] in liked_artist_ids:
-                    personalization_score += 10
-                
-                # Collaborative filtering boost
-                if aid in similar_user_likes and aid not in liked_album_ids:
-                    personalization_score += 8
-                
-                # Already liked albums get top priority
-                if album_dict['is_liked']:
-                    personalization_score += 15
-            
-            # 3. EXPLORATION SCORE (20%): Controlled randomness for discovery
-            exploration_score = 0
-            if user_id:
-                # Boost albums from genres user hasn't explored much
-                unexplored_boost = 0
-                for g in album_dict['genres']:
-                    if g not in user_genre_counts or user_genre_counts[g] < 2:
-                        unexplored_boost += 1
-                exploration_score += min(unexplored_boost * 3, 10)
-                
-                # Add controlled randomness
-                exploration_score += rng.uniform(0, 10)
+                c.execute('''
+                    SELECT DISTINCT a.*, ar.name as artist_name 
+                    FROM albums a 
+                    JOIN artists ar ON a.artist_id = ar.id
+                    JOIN album_genres ag ON a.id = ag.album_id
+                    JOIN genres g ON ag.genre_id = g.id
+                    WHERE g.name = %s
+                ''', (genre,))
+                albums_data = c.fetchall()
             else:
-                # For anonymous users, more randomness
-                exploration_score = rng.uniform(0, 20)
-            
-            # 4. DIVERSITY PENALTY (10%): Will be applied after initial sorting
-            # (Applied later to avoid clustering)
-            
-            # Combine scores
-            total_score = base_score + personalization_score + exploration_score
-            album_dict['_score'] = total_score
-            album_dict['_artist_id'] = album['artist_id']
-            album_dict['_release_year'] = album['release_date'][:4] if album['release_date'] else None
-            
-            results.append(album_dict)
-        
-        conn.close()
-        
-        # Sort by score
-        results.sort(key=lambda x: x['_score'], reverse=True)
-        
-        # Apply diversity optimization: penalize albums that cluster by artist/genre
-        if not genre:  # Only apply diversity when not filtering by genre
-            seen_artists = Counter()
-            seen_genres = Counter()
-            
-            for i, album in enumerate(results):
-                # Penalize if we've seen this artist too much in top results
-                artist_penalty = seen_artists[album['_artist_id']] * 2
+                # No filter
+                c.execute('SELECT COUNT(*) as count FROM albums')
+                total_count = c.fetchone()['count']
                 
-                # Penalize if genres are over-represented
-                genre_penalty = sum(seen_genres[g] for g in album['genres']) * 0.5
-                
-                # Apply penalties
-                diversity_penalty = (artist_penalty + genre_penalty) * 0.1
-                album['_score'] -= diversity_penalty
-                
-                # Update counters
-                seen_artists[album['_artist_id']] += 1
-                for g in album['genres']:
-                    seen_genres[g] += 1
+                c.execute('''
+                    SELECT a.*, ar.name as artist_name 
+                    FROM albums a 
+                    JOIN artists ar ON a.artist_id = ar.id
+                ''')
+                albums_data = c.fetchall()
             
-            # Re-sort after diversity adjustment
+            # Get all genres
+            c.execute('''
+                SELECT ag.album_id, g.name 
+                FROM genres g 
+                JOIN album_genres ag ON g.id = ag.genre_id
+            ''')
+            all_genres = c.fetchall()
+            
+            album_genres_map = {}
+            for row in all_genres:
+                if row['album_id'] not in album_genres_map:
+                    album_genres_map[row['album_id']] = []
+                album_genres_map[row['album_id']].append(row['name'])
+
+            # Get user profile data
+            liked_album_ids = set()
+            liked_artist_ids = set()
+            user_genre_counts = Counter()
+            similar_user_likes = set()
+            
+            if user_id:
+                # Get user's likes
+                c.execute("SELECT album_id FROM likes WHERE user_id = %s", (user_id,))
+                likes = c.fetchall()
+                liked_album_ids = {row['album_id'] for row in likes}
+                
+                # Get liked artists
+                if liked_album_ids:
+                    placeholders = ','.join(['%s'] * len(liked_album_ids))
+                    c.execute(f'''
+                        SELECT DISTINCT artist_id FROM albums WHERE id IN ({placeholders})
+                    ''', tuple(liked_album_ids))
+                    liked_artists = c.fetchall()
+                    liked_artist_ids = {row['artist_id'] for row in liked_artists}
+                
+                # Build genre preference profile
+                for aid in liked_album_ids:
+                    if aid in album_genres_map:
+                        for g in album_genres_map[aid]:
+                            user_genre_counts[g] += 1
+                
+                # Collaborative filtering: find similar users
+                if liked_album_ids:
+                    # Find users who liked at least 2 of the same albums
+                    placeholders = ','.join(['%s'] * len(liked_album_ids))
+                    c.execute(f'''
+                        SELECT user_id, COUNT(*) as common_likes
+                        FROM likes
+                        WHERE album_id IN ({placeholders}) AND user_id != %s
+                        GROUP BY user_id
+                        HAVING COUNT(*) >= 2
+                        ORDER BY common_likes DESC
+                        LIMIT 10
+                    ''', (*tuple(liked_album_ids), user_id))
+                    similar_users = c.fetchall()
+                    
+                    # Get what similar users liked
+                    if similar_users:
+                        similar_user_ids = [row['user_id'] for row in similar_users]
+                        placeholders = ','.join(['%s'] * len(similar_user_ids))
+                        c.execute(f'''
+                            SELECT DISTINCT album_id FROM likes 
+                            WHERE user_id IN ({placeholders})
+                        ''', tuple(similar_user_ids))
+                        collab_likes = c.fetchall()
+                        similar_user_likes = {row['album_id'] for row in collab_likes}
+
+            # Calculate scores for all albums
+            results = []
+            for album in albums_data:
+                album_dict = dict(album)
+                aid = album['id']
+                
+                album_dict['genres'] = album_genres_map.get(aid, [])
+                album_dict['is_liked'] = aid in liked_album_ids
+                
+                img_path = album_dict['image_path']
+                if img_path and img_path.startswith('covers/'):
+                    img_path = img_path.replace('covers/', '')
+                album_dict['image_path'] = f"/covers/{img_path}" if img_path else None
+                
+                # === SCORING ALGORITHM ===
+                
+                # 1. BASE SCORE (30%): Quality and popularity
+                base_score = 0
+                # Rank score (lower rank = better)
+                rank_score = max(0, 1 - (album['rank'] / 10000.0))
+                # Rating score
+                rating_score = (album['rating'] or 3.0) / 5.0 if album['rating'] else 0.6
+                # Popularity score (normalized ratings count)
+                try:
+                    ratings_count = int(album['ratings_count'].replace(',', '')) if album['ratings_count'] else 0
+                    popularity_score = min(1.0, ratings_count / 50000.0)
+                except:
+                    popularity_score = 0
+                
+                base_score = (rank_score * 0.5 + rating_score * 0.3 + popularity_score * 0.2) * 30
+                
+                # 2. PERSONALIZATION SCORE (40%)
+                personalization_score = 0
+                if user_id:
+                    # Genre affinity
+                    genre_match = 0
+                    for g in album_dict['genres']:
+                        if g in user_genre_counts:
+                            genre_match += user_genre_counts[g]
+                    personalization_score += min(genre_match * 3, 20)  # Cap at 20
+                    
+                    # Artist affinity
+                    if album['artist_id'] in liked_artist_ids:
+                        personalization_score += 10
+                    
+                    # Collaborative filtering boost
+                    if aid in similar_user_likes and aid not in liked_album_ids:
+                        personalization_score += 8
+                    
+                    # Already liked albums get top priority
+                    if album_dict['is_liked']:
+                        personalization_score += 15
+                
+                # 3. EXPLORATION SCORE (20%): Controlled randomness for discovery
+                exploration_score = 0
+                if user_id:
+                    # Boost albums from genres user hasn't explored much
+                    unexplored_boost = 0
+                    for g in album_dict['genres']:
+                        if g not in user_genre_counts or user_genre_counts[g] < 2:
+                            unexplored_boost += 1
+                    exploration_score += min(unexplored_boost * 3, 10)
+                    
+                    # Add controlled randomness
+                    exploration_score += rng.uniform(0, 10)
+                else:
+                    # For anonymous users, more randomness
+                    exploration_score = rng.uniform(0, 20)
+                
+                # 4. DIVERSITY PENALTY (10%): Will be applied after initial sorting
+                # (Applied later to avoid clustering)
+                
+                # Combine scores
+                total_score = base_score + personalization_score + exploration_score
+                album_dict['_score'] = total_score
+                album_dict['_artist_id'] = album['artist_id']
+                album_dict['_release_year'] = album['release_date'][:4] if album['release_date'] else None
+                
+                results.append(album_dict)
+            
+            # Sort by score
             results.sort(key=lambda x: x['_score'], reverse=True)
-        
-        # Apply pagination
-        paginated_results = results[offset:offset + limit]
-        
-        # Clean up internal fields
-        for album in paginated_results:
-            album.pop('_score', None)
-            album.pop('_artist_id', None)
-            album.pop('_release_year', None)
-        
-        return {
-            "albums": paginated_results,
-            "total": total_count,
-            "limit": limit,
-            "offset": offset,
-            "has_more": offset + limit < len(results)
-        }
+            
+            # Apply diversity optimization: penalize albums that cluster by artist/genre
+            if not genre:  # Only apply diversity when not filtering by genre
+                seen_artists = Counter()
+                seen_genres = Counter()
+                
+                for i, album in enumerate(results):
+                    # Penalize if we've seen this artist too much in top results
+                    artist_penalty = seen_artists[album['_artist_id']] * 2
+                    
+                    # Penalize if genres are over-represented
+                    genre_penalty = sum(seen_genres[g] for g in album['genres']) * 0.5
+                    
+                    # Apply penalties
+                    diversity_penalty = (artist_penalty + genre_penalty) * 0.1
+                    album['_score'] -= diversity_penalty
+                    
+                    # Update counters
+                    seen_artists[album['_artist_id']] += 1
+                    for g in album['genres']:
+                        seen_genres[g] += 1
+                
+                # Re-sort after diversity adjustment
+                results.sort(key=lambda x: x['_score'], reverse=True)
+            
+            # Apply pagination
+            paginated_results = results[offset:offset + limit]
+            
+            # Clean up internal fields
+            for album in paginated_results:
+                album.pop('_score', None)
+                album.pop('_artist_id', None)
+                album.pop('_release_year', None)
+            
+            return {
+                "albums": paginated_results,
+                "total": total_count,
+                "limit": limit,
+                "offset": offset,
+                "has_more": offset + limit < len(results)
+            }
     except Exception as e:
         print(f"ERROR: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/albums/{album_id}", response_model=Album)
-async def get_album(album_id: int, user_id: Optional[int] = None):
+def get_album(album_id: int, user_id: Optional[int] = None):
     try:
-        conn = get_db_connection()
-        c = conn.cursor(cursor_factory=RealDictCursor)
-        
-        c.execute('''
-            SELECT a.*, ar.name as artist_name 
-            FROM albums a 
-            JOIN artists ar ON a.artist_id = ar.id
-            WHERE a.id = %s
-        ''', (album_id,))
-        album = c.fetchone()
-        
-        if album is None:
-            conn.close()
-            raise HTTPException(status_code=404, detail="Album not found")
-        
-        album_dict = dict(album)
-        
-        c.execute('''
-            SELECT g.name 
-            FROM genres g 
-            JOIN album_genres ag ON g.id = ag.genre_id 
-            WHERE ag.album_id = %s
-        ''', (album_id,))
-        genres = c.fetchall()
-        
-        album_dict['genres'] = [g['name'] for g in genres]
-        
-        album_dict['is_liked'] = False
-        if user_id:
-            c.execute("SELECT * FROM likes WHERE user_id = %s AND album_id = %s", (user_id, album_id))
-            like = c.fetchone()
-            if like:
-                album_dict['is_liked'] = True
+        with get_db_connection() as conn:
+            c = conn.cursor(cursor_factory=RealDictCursor)
+            
+            c.execute('''
+                SELECT a.*, ar.name as artist_name 
+                FROM albums a 
+                JOIN artists ar ON a.artist_id = ar.id
+                WHERE a.id = %s
+            ''', (album_id,))
+            album = c.fetchone()
+            
+            if album is None:
+                raise HTTPException(status_code=404, detail="Album not found")
+            
+            album_dict = dict(album)
+            
+            c.execute('''
+                SELECT g.name 
+                FROM genres g 
+                JOIN album_genres ag ON g.id = ag.genre_id 
+                WHERE ag.album_id = %s
+            ''', (album_id,))
+            genres = c.fetchall()
+            
+            album_dict['genres'] = [g['name'] for g in genres]
+            
+            album_dict['is_liked'] = False
+            if user_id:
+                c.execute("SELECT * FROM likes WHERE user_id = %s AND album_id = %s", (user_id, album_id))
+                like = c.fetchone()
+                if like:
+                    album_dict['is_liked'] = True
 
-        img_path = album_dict['image_path']
-        if img_path and img_path.startswith('covers/'):
-            img_path = img_path.replace('covers/', '')
-        album_dict['image_path'] = f"/covers/{img_path}" if img_path else None
-        
-        conn.close()
-        return album_dict
+            img_path = album_dict['image_path']
+            if img_path and img_path.startswith('covers/'):
+                img_path = img_path.replace('covers/', '')
+            album_dict['image_path'] = f"/covers/{img_path}" if img_path else None
+            
+            return album_dict
+    except HTTPException as he:
+        raise he
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -770,67 +891,70 @@ class Artist(BaseModel):
     albums: List[Album] = []
 
 @app.get("/api/artists/{artist_id}", response_model=Artist)
-async def get_artist(artist_id: int):
+def get_artist(artist_id: int):
     try:
-        conn = get_db_connection()
-        c = conn.cursor(cursor_factory=RealDictCursor)
-        
-        # Get artist details
-        c.execute("SELECT * FROM artists WHERE id = %s", (artist_id,))
-        artist = c.fetchone()
-        
-        if not artist:
-            conn.close()
-            raise HTTPException(status_code=404, detail="Artist not found")
+        with get_db_connection() as conn:
+            c = conn.cursor(cursor_factory=RealDictCursor)
             
-        artist_dict = dict(artist)
-        
-        # Get artist's albums (only ranked albums from Top 5000 chart)
-        c.execute('''
-            SELECT a.*, ar.name as artist_name 
-            FROM albums a 
-            JOIN artists ar ON a.artist_id = ar.id
-            WHERE a.artist_id = %s AND a.rank IS NOT NULL
-            ORDER BY a.release_date DESC
-        ''', (artist_id,))
-        albums = c.fetchall()
-        
-        # Get genres for these albums
-        if albums:
-            album_ids = tuple(a['id'] for a in albums)
-            placeholders = ','.join(['%s'] * len(album_ids))
-            c.execute(f'''
-                SELECT ag.album_id, g.name 
-                FROM genres g 
-                JOIN album_genres ag ON g.id = ag.genre_id 
-                WHERE ag.album_id IN ({placeholders})
-            ''', album_ids)
-            all_genres = c.fetchall()
+            # Get artist details
+            c.execute("SELECT * FROM artists WHERE id = %s", (artist_id,))
+            artist = c.fetchone()
             
-            album_genres_map = {}
-            for row in all_genres:
-                if row['album_id'] not in album_genres_map:
-                    album_genres_map[row['album_id']] = []
-                album_genres_map[row['album_id']].append(row['name'])
-        else:
-            album_genres_map = {}
+            if not artist:
+                raise HTTPException(status_code=404, detail="Artist not found")
+                
+            artist_dict = dict(artist)
+            
+            # Get artist's albums (only ranked albums from Top 5000 chart)
+            c.execute('''
+                SELECT a.*, ar.name as artist_name 
+                FROM albums a 
+                JOIN artists ar ON a.artist_id = ar.id
+                WHERE a.artist_id = %s AND a.rank IS NOT NULL
+                ORDER BY a.release_date DESC
+            ''', (artist_id,))
+            albums = c.fetchall()
+            
+            # Get genres for these albums
+            if albums:
+                album_ids = tuple(a['id'] for a in albums)
+                placeholders = ','.join(['%s'] * len(album_ids))
+                c.execute(f'''
+                    SELECT ag.album_id, g.name 
+                    FROM genres g 
+                    JOIN album_genres ag ON g.id = ag.genre_id 
+                    WHERE ag.album_id IN ({placeholders})
+                ''', album_ids)
+                all_genres = c.fetchall()
+                
+                album_genres_map = {}
+                for row in all_genres:
+                    if row['album_id'] not in album_genres_map:
+                        album_genres_map[row['album_id']] = []
+                    album_genres_map[row['album_id']].append(row['name'])
+            else:
+                album_genres_map = {}
 
-        artist_albums = []
-        for album in albums:
-            alb_dict = dict(album)
-            alb_dict['genres'] = album_genres_map.get(alb_dict['id'], [])
+            artist_albums = []
+            for album in albums:
+                alb_dict = dict(album)
+                alb_dict['genres'] = album_genres_map.get(alb_dict['id'], [])
+                
+                img_path = alb_dict['image_path']
+                if img_path and img_path.startswith('covers/'):
+                    img_path = img_path.replace('covers/', '')
+                alb_dict['image_path'] = f"/covers/{img_path}" if img_path else None
+                
+                # Add dummy fields required by Album model
+                alb_dict['artist_name'] = artist_dict['name']
+                
+                artist_albums.append(alb_dict)
+                
+            artist_dict['albums'] = artist_albums
             
-            img_path = alb_dict['image_path']
-            if img_path and img_path.startswith('covers/'):
-                img_path = img_path.replace('covers/', '')
-            alb_dict['image_path'] = f"/covers/{img_path}" if img_path else None
-            
-            artist_albums.append(alb_dict)
-            
-        artist_dict['albums'] = artist_albums
-        
-        conn.close()
-        return artist_dict
+            return artist_dict
+    except HTTPException as he:
+        raise he
     except Exception as e:
         print(f"ERROR: {e}")
         raise HTTPException(status_code=500, detail=str(e))
