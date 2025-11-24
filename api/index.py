@@ -23,11 +23,11 @@ async def root():
     return {"message": "FastAPI is working", "status": "ok", "db_host": DB_HOST, "db_name": DB_NAME}
 
 # Enable CORS for Next.js frontend with credentials support
-# Get allowed origins from environment or use defaults
 allowed_origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "http://0.0.0.0:3000",
+    "https://serendipity-iota.vercel.app",  # Production frontend
 ]
 
 # Add Vercel deployment URL if available
@@ -42,10 +42,11 @@ if custom_domain and custom_domain not in allowed_origins:
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,  # Explicit origins for cookie support
     allow_credentials=True,  # Important for cookies
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["set-cookie"],  # Expose Set-Cookie header
 )
 
 class Album(BaseModel):
