@@ -13,6 +13,13 @@ export default function SlowdiveHero() {
     const { scrollY } = useScroll();
     const [isAuthOpen, setIsAuthOpen] = useState(false);
     const [user, setUser] = useState<{ id: number; username: string } | null>(null);
+
+    useEffect(() => {
+        const stored = localStorage.getItem('user');
+        if (stored) {
+            setUser(JSON.parse(stored));
+        }
+    }, []);
     const [searchQuery, setSearchQuery] = useState('');
     const [isVisible, setIsVisible] = useState(true);
     const [lastScrollY, setLastScrollY] = useState(0);
@@ -35,13 +42,6 @@ export default function SlowdiveHero() {
         }
         return () => window.removeEventListener('click', handleClickOutside);
     }, [isDropdownOpen]);
-
-    useEffect(() => {
-        const stored = localStorage.getItem('user');
-        if (stored) {
-            setUser(JSON.parse(stored));
-        }
-    }, []);
 
     // Auto-hide navbar on scroll
     useEffect(() => {
@@ -236,6 +236,14 @@ export default function SlowdiveHero() {
                                                 >
                                                     <User className="w-4 h-4 text-gray-400 group-hover:text-purple-400 transition-colors" />
                                                     Your Profile
+                                                </Link>
+                                                <Link
+                                                    href="/settings"
+                                                    onClick={() => setIsDropdownOpen(false)}
+                                                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:bg-white/10 hover:text-white transition-colors group"
+                                                >
+                                                    <Settings className="w-4 h-4 text-gray-400 group-hover:text-purple-400 transition-colors" />
+                                                    Settings
                                                 </Link>
                                             </div>
 

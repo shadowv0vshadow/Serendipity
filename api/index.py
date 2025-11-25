@@ -186,6 +186,75 @@ class LikeRequest(BaseModel):
     user_id: int
     album_id: int
 
+class UserSettings(BaseModel):
+    collection_mode: bool = True
+    valuation_mode: bool = False
+    price_comparison_mode: bool = False
+
+@app.get("/api/settings")
+def get_settings(session_token: Optional[str] = Cookie(None)):
+    user_id = get_user_from_session(session_token)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+        
+    with get_db_connection() as conn:
+        c = conn.cursor(cursor_factory=RealDictCursor)
+        c.execute("SELECT settings FROM users WHERE id = %s", (user_id,))
+        result = c.fetchone()
+        
+    if not result or not result['settings']:
+        # Return defaults if no settings found
+        return UserSettings()
+        
+    return result['settings']
+
+@app.put("/api/settings")
+def update_settings(settings: UserSettings, session_token: Optional[str] = Cookie(None)):
+    user_id = get_user_from_session(session_token)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+        
+    import json
+    settings_json = json.dumps(settings.dict())
+    
+    with get_write_db_connection() as conn:
+        c = conn.cursor()
+        c.execute("UPDATE users SET settings = %s WHERE id = %s", (settings_json, user_id))
+        conn.commit()
+        
+    return settings
+
+@app.get("/api/search")
+def search(q: str):
+    if not q:
+        return {"artists": [], "albums": []}
+        
+    query = f"%{q}%"
+    
+    with get_db_connection() as conn:
+        c = conn.cursor(cursor_factory=RealDictCursor)
+        
+        # Search Artists
+        c.execute("""
+            SELECT id, name, image_path, location 
+            FROM artists 
+            WHERE name ILIKE %s 
+            LIMIT 5
+        """, (query,))
+        artists = c.fetchall()
+        
+        # Search Albums
+        c.execute("""
+            SELECT a.id, a.title, a.artist_id, a.release_date, a.image_path, a.rating, ar.name as artist_name
+            FROM albums a
+            JOIN artists ar ON a.artist_id = ar.id
+            WHERE a.title ILIKE %s
+            LIMIT 10
+        """, (query,))
+        albums = c.fetchall()
+        
+    return {"artists": artists, "albums": albums}
+
 # PostgreSQL Connection
 # Vercel provides POSTGRES_URL, POSTGRES_USER, POSTGRES_HOST, POSTGRES_PASSWORD, POSTGRES_DATABASE
 # For local development, use environment variables from .env.local

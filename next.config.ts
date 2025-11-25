@@ -13,11 +13,17 @@ const nextConfig: NextConfig = {
     ],
   },
   async rewrites() {
-    // Only proxy in production, not in development
+    // In development, proxy to local FastAPI server
     if (process.env.NODE_ENV === 'development') {
-      return [];
+      return [
+        {
+          source: '/api/:path*',
+          destination: 'http://localhost:8000/api/:path*',
+        },
+      ];
     }
 
+    // In production (Vercel), route to the Python entry point
     return [
       {
         source: '/api/:path*',

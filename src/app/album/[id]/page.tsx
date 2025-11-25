@@ -13,7 +13,7 @@ async function getAlbum(id: string) {
     const res = await fetch(`${baseUrl}/api/albums/${id}`, { cache: 'no-store' });
     if (!res.ok) {
         if (res.status === 404) return null;
-        throw new Error('Failed to fetch album');
+        throw new Error(`Failed to fetch album: ${res.status} ${res.statusText}`);
     }
     return res.json();
 }

@@ -72,9 +72,12 @@ def save_to_db(items):
     
     for item in items:
         try:
+            # Clean artist name
+            artist_name = item['Artist'].replace('*', '').strip()
+            
             # 1. Insert/Get Artist
-            c.execute('INSERT INTO artists (name) VALUES (%s) ON CONFLICT (name) DO NOTHING', (item['Artist'],))
-            c.execute('SELECT id FROM artists WHERE name = %s', (item['Artist'],))
+            c.execute('INSERT INTO artists (name) VALUES (%s) ON CONFLICT (name) DO NOTHING', (artist_name,))
+            c.execute('SELECT id FROM artists WHERE name = %s', (artist_name,))
             artist_id = c.fetchone()[0]
             
             # 2. Check if Album exists

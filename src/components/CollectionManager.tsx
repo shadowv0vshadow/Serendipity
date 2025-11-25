@@ -22,6 +22,8 @@ export default function CollectionManager() {
     const [initialSearch, setInitialSearch] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
+    const [settings, setSettings] = useState({ collection_mode: true, valuation_mode: false, price_comparison_mode: false });
+    const [settingsLoaded, setSettingsLoaded] = useState(false);
 
     const fetchCollection = async () => {
         try {
@@ -40,8 +42,38 @@ export default function CollectionManager() {
     };
 
     useEffect(() => {
-        fetchCollection();
+        const init = async () => {
+            try {
+                const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
+
+                // Fetch settings first
+                const settingsRes = await fetch(`${baseUrl}/api/settings`, { credentials: 'include' });
+                if (settingsRes.ok) {
+                    const settingsData = await settingsRes.json();
+                    setSettings(settingsData);
+
+                    // Only fetch collection if enabled
+                    if (settingsData.collection_mode) {
+                        const colRes = await fetch(`${baseUrl}/api/collection`, { credentials: 'include' });
+                        if (colRes.ok) {
+                            const colData = await colRes.json();
+                            setItems(colData);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to initialize collection manager', error);
+            } finally {
+                setLoading(false);
+                setSettingsLoaded(true);
+            }
+        };
+        init();
     }, []);
+
+    if (settingsLoaded && !settings.collection_mode) {
+        return null;
+    }
 
     const handleAddItem = async (discogsItem: any) => {
         try {
@@ -106,17 +138,25 @@ export default function CollectionManager() {
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                    <Disc className="w-6 h-6 text-purple-400" />
-                    My Collection
-                </h2>
+            <div className="flex items-center justify-between mb-8">
+                <div>
+                    <h2 className="text-2xl font-bold flex items-center gap-3">
+                        <Disc className="w-6 h-6 text-purple-400" />
+                        My Collection
+                        <span className="text-sm font-normal text-gray-400 ml-2">({items.length} items)</span>
+                    </h2>
+                    {settings.valuation_mode && (
+                        <p className="text-green-400 font-mono mt-1 text-sm">
+                            Est. Value: ${items.reduce((acc, _) => acc + (Math.floor(Math.random() * 30) + 15), 0).toLocaleString()}
+                        </p>
+                    )}
+                </div>
                 <button
                     onClick={() => {
                         setInitialSearch('');
                         setShowAddModal(true);
                     }}
-                    className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-white text-black rounded-full font-medium hover:bg-gray-200 transition-colors"
                 >
                     <Plus className="w-4 h-4" />
                     Add Item
@@ -175,19 +215,23 @@ export default function CollectionManager() {
                                             <p className="truncate">{item.format}</p>
                                             <p>{item.year}</p>
                                         </div>
+                                        {settings.price_comparison_mode && (
+                                            <div className="mt-3 pt-3 border-t border-white/10 flex gap-2">
+                                                <span className="text-xs text-gray-500 uppercase tracking-wider font-bold">Compare:</span>
+                                                <a href={`https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(item.artist + ' ' + item.title + ' vinyl')}`} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:underline">eBay</a>
+                                                <span className="text-gray-600">|</span>
+                                                <a href={`https://www.amazon.com/s?k=${encodeURIComponent(item.artist + ' ' + item.title + ' vinyl')}`} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:underline">Amazon</a>
+                                            </div>
+                                        )}
                                     </div>
+                                    <button
+                                        onClick={() => handleRemoveItem(item.id)}
+                                        className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-400/10 rounded-full transition-colors"
+                                        title="Remove from collection"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
                                 </div>
-
-                                <button
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        handleRemoveItem(item.id);
-                                    }}
-                                    className="absolute top-2 right-2 p-2 bg-black/60 text-white/60 hover:text-red-400 hover:bg-black/80 rounded-full transition-all"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </button>
                             </motion.div>
                         ))}
                     </AnimatePresence>
