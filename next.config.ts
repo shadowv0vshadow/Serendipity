@@ -21,7 +21,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: 'https://api-gamma-lyart.vercel.app/api/:path*',
+        destination: '/api/index',
       },
     ];
   },
