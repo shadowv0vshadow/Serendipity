@@ -61,7 +61,7 @@ export default function AlbumGrid({ allAlbums, genre, disableInfiniteScroll = fa
                     // Filter out duplicates based on id
                     setAlbums(prev => {
                         const existingIds = new Set(prev.map(a => a.id));
-                        const filtered = newAlbums.filter(a => !existingIds.has(a.id));
+                        const filtered = newAlbums.filter((a: Album) => !existingIds.has(a.id));
                         return [...prev, ...filtered];
                     });
                     setOffset(prev => prev + newAlbums.length);
