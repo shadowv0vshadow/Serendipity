@@ -12,7 +12,21 @@ from pydantic import BaseModel
 import bcrypt
 from collections import Counter
 from datetime import datetime, timedelta
-from discogs import DiscogsClient
+
+# Load .env.local manually if present (for local development)
+env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.env.local')
+if os.path.exists(env_path):
+    print(f"Loading environment from {env_path}")
+    with open(env_path, 'r') as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith('#'):
+                key, value = line.split('=', 1)
+                if key not in os.environ:
+                    os.environ[key] = value.strip('"').strip("'")
+# Add current directory to path to allow importing sibling modules
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from _discogs import DiscogsClient
 
 app = FastAPI(title="slowdive API")
 discogs_client = DiscogsClient()
@@ -180,6 +194,8 @@ DB_USER = os.environ.get("POSTGRES_USER", "postgres")
 DB_NAME = os.environ.get("POSTGRES_DATABASE") or os.environ.get("POSTGRES_DB", "musicdb")
 DB_PASSWORD = os.environ.get("POSTGRES_PASSWORD", "")  # Must be set in environment
 DB_PORT = os.environ.get("POSTGRES_PORT", "5432")
+
+print(f"DEBUG: Connecting to DB at {DB_HOST}:{DB_PORT} (User: {DB_USER}, DB: {DB_NAME})")
 
 from psycopg2 import pool
 

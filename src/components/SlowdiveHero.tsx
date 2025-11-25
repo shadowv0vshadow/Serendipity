@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import AuthModal from './AuthModal';
 import { getApiBaseUrl } from '@/lib/api-config';
+import { User, LogOut, ChevronDown, Settings } from 'lucide-react';
+import { AnimatePresence } from 'framer-motion';
 
 export default function SlowdiveHero() {
     const { scrollY } = useScroll();
@@ -15,8 +17,24 @@ export default function SlowdiveHero() {
     const [isVisible, setIsVisible] = useState(true);
     const [lastScrollY, setLastScrollY] = useState(0);
     const [isDiving, setIsDiving] = useState(false);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const router = useRouter();
     const pathname = usePathname();
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            const target = event.target as HTMLElement;
+            if (!target.closest('.user-dropdown')) {
+                setIsDropdownOpen(false);
+            }
+        };
+
+        if (isDropdownOpen) {
+            window.addEventListener('click', handleClickOutside);
+        }
+        return () => window.removeEventListener('click', handleClickOutside);
+    }, [isDropdownOpen]);
 
     useEffect(() => {
         const stored = localStorage.getItem('user');
@@ -181,26 +199,65 @@ export default function SlowdiveHero() {
 
                     <div className="flex-shrink-0">
                         {user ? (
-                            <div className="flex items-center gap-3 sm:gap-4">
-                                <Link
-                                    href="/profile"
-                                    className="text-sm text-gray-300 hover:text-white transition-colors hidden md:inline font-medium truncate max-w-[120px]"
-                                >
-                                    {user.username}
-                                </Link>
+                            <div className="relative user-dropdown">
                                 <button
-                                    onClick={handleLogout}
-                                    className="text-xs border border-white/20 rounded px-3 py-1.5 text-gray-400 hover:text-white hover:border-white transition-colors"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setIsDropdownOpen(!isDropdownOpen);
+                                    }}
+                                    className="flex items-center gap-2 text-sm font-medium text-white hover:opacity-80 transition-opacity focus:outline-none"
                                 >
-                                    LOGOUT
+                                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center text-white font-bold shadow-lg border border-white/10">
+                                        {user.username.charAt(0).toUpperCase()}
+                                    </div>
+                                    <span className="hidden md:block max-w-[100px] truncate">{user.username}</span>
+                                    <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
                                 </button>
+
+                                <AnimatePresence>
+                                    {isDropdownOpen && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                                            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                            transition={{ duration: 0.2 }}
+                                            className="absolute right-0 mt-2 w-56 bg-[#1a1a1a]/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden py-1 z-50"
+                                        >
+                                            <div className="px-4 py-3 border-b border-white/5">
+                                                <p className="text-xs text-gray-400 font-medium">Signed in as</p>
+                                                <p className="text-sm font-bold text-white truncate mt-0.5">{user.username}</p>
+                                            </div>
+
+                                            <div className="py-1">
+                                                <Link
+                                                    href="/profile"
+                                                    onClick={() => setIsDropdownOpen(false)}
+                                                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:bg-white/10 hover:text-white transition-colors group"
+                                                >
+                                                    <User className="w-4 h-4 text-gray-400 group-hover:text-purple-400 transition-colors" />
+                                                    Your Profile
+                                                </Link>
+                                            </div>
+
+                                            <div className="border-t border-white/5 py-1">
+                                                <button
+                                                    onClick={handleLogout}
+                                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 transition-colors text-left group"
+                                                >
+                                                    <LogOut className="w-4 h-4 group-hover:text-red-400" />
+                                                    Sign out
+                                                </button>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
                             </div>
                         ) : (
                             <button
                                 onClick={() => setIsAuthOpen(true)}
-                                className="text-sm font-medium text-white hover:text-gray-300 transition-colors tracking-wide"
+                                className="px-5 py-2 text-sm font-medium text-white bg-white/10 hover:bg-white/20 border border-white/10 rounded-full transition-all hover:scale-105 active:scale-95 backdrop-blur-sm"
                             >
-                                LOGIN
+                                Login
                             </button>
                         )}
                     </div>
