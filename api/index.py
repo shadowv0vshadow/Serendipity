@@ -12,7 +12,7 @@ from pydantic import BaseModel
 import bcrypt
 from collections import Counter
 from datetime import datetime, timedelta
-from .discogs import DiscogsClient
+from discogs import DiscogsClient
 
 app = FastAPI(title="slowdive API")
 discogs_client = DiscogsClient()
