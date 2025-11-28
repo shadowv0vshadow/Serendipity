@@ -1,12 +1,12 @@
 export const getApiBaseUrl = () => {
     // Server-side execution
     if (typeof window === 'undefined') {
-        if (process.env.VERCEL_URL) {
-            return `https://${process.env.VERCEL_URL}`;
-        }
-        // Local development server-side or if explicit URL provided
+        // Allow explicit override of API URL on server side
         if (process.env.NEXT_PUBLIC_API_URL) {
             return process.env.NEXT_PUBLIC_API_URL;
+        }
+        if (process.env.VERCEL_URL) {
+            return `https://${process.env.VERCEL_URL}`;
         }
         return 'http://localhost:8000';
     }
