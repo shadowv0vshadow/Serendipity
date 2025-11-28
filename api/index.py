@@ -146,6 +146,7 @@ if custom_domain and custom_domain not in allowed_origins:
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,  # Explicit origins for cookie support
+    allow_origin_regex='https://.*\.vercel\.app',  # Allow all Vercel deployments
     allow_credentials=True,  # Important for cookies
     allow_methods=["*"],
     allow_headers=["*"],

@@ -47,12 +47,15 @@ export default function AlbumGrid({ allAlbums, genre, disableInfiniteScroll = fa
                 url += `&genre=${encodeURIComponent(genre)}`;
             }
 
+            console.log('Fetching albums from:', url);
+
             const res = await fetch(url, {
                 cache: 'no-store',
             });
 
             if (res.ok) {
                 const data = await res.json();
+                console.log('Fetched albums:', data.albums.length);
                 const newAlbums = data.albums;
 
                 if (newAlbums.length === 0) {
@@ -62,11 +65,13 @@ export default function AlbumGrid({ allAlbums, genre, disableInfiniteScroll = fa
                     setAlbums(prev => {
                         const existingIds = new Set(prev.map(a => a.id));
                         const filtered = newAlbums.filter((a: Album) => !existingIds.has(a.id));
+                        console.log('New unique albums:', filtered.length);
                         return [...prev, ...filtered];
                     });
                     setOffset(prev => prev + newAlbums.length);
                 }
             } else {
+                console.error('Failed to fetch albums:', res.status, res.statusText);
                 setHasMore(false);
             }
         } catch (error) {

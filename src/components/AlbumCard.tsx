@@ -54,7 +54,7 @@ export default function AlbumCard({ album }: { album: Album }) {
         >
             {album.image_path ? (
                 <img
-                    src={encodeURI(album.image_path)}
+                    src={album.image_path.startsWith('http') ? album.image_path : `${getApiBaseUrl()}${album.image_path}`}
                     alt={album.title}
                     className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110"
                     loading="lazy"
