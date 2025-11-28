@@ -22,7 +22,9 @@ interface SearchResults {
     albums: Album[];
 }
 
-export default function SearchPage() {
+import { Suspense } from 'react';
+
+function SearchContent() {
     const searchParams = useSearchParams();
     const q = searchParams.get('q');
     const [results, setResults] = useState<SearchResults>({ artists: [], albums: [] });
@@ -163,5 +165,20 @@ export default function SearchPage() {
                 )}
             </div>
         </div>
+    );
+}
+
+export default function SearchPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-[#111] pt-24 px-6 flex items-center justify-center">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+                    <p className="text-gray-400">Loading search...</p>
+                </div>
+            </div>
+        }>
+            <SearchContent />
+        </Suspense>
     );
 }
